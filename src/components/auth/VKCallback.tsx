@@ -44,8 +44,8 @@ export function VKCallback() {
           );
         }
 
-        // Перенаправляем на главную страницу
-        navigate('/');
+        // Перенаправляем на дашборд
+        navigate('/dashboard');
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Произошла ошибка при авторизации');
       }
