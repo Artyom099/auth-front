@@ -5,7 +5,7 @@ import { vkAuthService } from '../../services/vkAuthService';
 import { RegistrationConfirmation } from './RegistrationConfirmation';
 
 interface AuthFormProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (userData: any) => void;
 }
 
 interface PasswordInputProps {
@@ -65,6 +65,7 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,19 +77,27 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
         await authService.registration(formData.login, formData.email, formData.password);
         setShowConfirmation(true);
       } else {
-        const loginData = await authService.login(formData.email, formData.password);
-        console.log('Успешная авторизация:', loginData);
-        
-        // Получаем информацию о пользователе
-        const userData = await authService.getMe();
-        console.log('Данные пользователя:', userData);
-        
-        setSuccess('Успешная авторизация!');
-        // Вызываем колбэк после успешного входа
-        onLoginSuccess();
+        await handleLogin(e);
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Произошла ошибка при авторизации');
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await authService.login(formData.email, formData.password);
+      // После успешного логина получаем данные пользователя
+      const userData = await authService.getMe();
+      onLoginSuccess(userData.payload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -45,32 +45,24 @@ export const authService = {
         password,
       });
 
-      // Всегда обновляем токены при успешном входе
-      if (response.data.payload?.accessToken) {
-        localStorage.setItem('accessToken', response.data.payload.accessToken);
-      } else {
-        throw new Error('Access token не получен');
+      if (response.data.hasError) {
+        throw new Error(response.data.message || 'Ошибка при авторизации');
       }
 
-      if (response.data.payload?.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.payload.refreshToken);
-        // Получаем deviceId из refreshToken
-        const decodedToken = decodeJWT(response.data.payload.refreshToken);
-        if (decodedToken?.deviceId) {
-          localStorage.setItem('currentDeviceId', decodedToken.deviceId);
-        } else {
-          console.warn('DeviceId не найден в refreshToken');
-        }
-      } else {
-        throw new Error('Refresh token не получен');
+      const { accessToken, refreshToken } = response.data.payload;
+      
+      if (!accessToken || !refreshToken) {
+        throw new Error('Токены не получены');
       }
+
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
 
       return response.data;
     } catch (error) {
       // В случае ошибки очищаем токены
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      localStorage.removeItem('currentDeviceId');
 
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Ошибка при авторизации');
@@ -82,9 +74,19 @@ export const authService = {
   async getMe() {
     try {
       const response = await api.get('/auth/me');
+      
+      if (response.data.hasError) {
+        throw new Error(response.data.message || 'Ошибка при получении данных пользователя');
+      }
+
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+        }
         throw new Error(error.response?.data?.message || 'Ошибка при получении данных пользователя');
       }
       throw error;

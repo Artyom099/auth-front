@@ -1,18 +1,76 @@
-import React, { useState } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, Shield, Globe } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, Shield, Globe, User } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
+import { authService } from '../../services/authService';
+
+interface UserData {
+  id: string;
+  login: string;
+  email: string;
+}
 
 export function Dashboard() {
-  const [activeTab, setActiveTab] = useState('devices');
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  const handleLoginSuccess = (userData: UserData) => {
+    setUserData(userData);
+    setIsLoggedIn(true);
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      try {
+        const response = await authService.getMe();
+        console.log('User data response:', response);
+        if (response.payload) {
+          setUserData({
+            id: response.payload.id,
+            login: response.payload.login,
+            email: response.payload.email
+          });
+          setIsLoggedIn(true);
+        } else {
+          throw new Error('Данные пользователя не получены');
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке авторизации:', error);
+        setIsLoggedIn(false);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setIsLoggedIn(false);
+      setUserData(null);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    } catch (error) {
+      console.error('Ошибка при выходе:', error);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setIsLoggedIn(false);
+      setUserData(null);
+    }
   };
 
   if (!isLoggedIn) {
-    return <AuthForm onLoginSuccess={() => setIsLoggedIn(true)} />;
+    return <AuthForm onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
@@ -21,14 +79,14 @@ export function Dashboard() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img
-              src={mockUserData.avatar}
-              alt="User avatar"
-              className="h-10 w-10 rounded-full"
-            />
+            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-600 font-medium">
+                {userData?.login?.[0]?.toUpperCase() || '?'}
+              </span>
+            </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{mockUserData.name}</h1>
-              <p className="text-sm text-gray-500">{mockUserData.email}</p>
+              <h1 className="text-xl font-semibold text-gray-900">{userData?.login || 'Пользователь'}</h1>
+              <p className="text-sm text-gray-500">{userData?.email || ''}</p>
             </div>
           </div>
           <button
@@ -45,6 +103,17 @@ export function Dashboard() {
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`${
+                activeTab === 'profile'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              <User className="h-5 w-5 mr-2" />
+              Профиль
+            </button>
             <button
               onClick={() => setActiveTab('devices')}
               className={`${
@@ -72,6 +141,30 @@ export function Dashboard() {
 
         {/* Content */}
         <div className="bg-white rounded-lg shadow">
+          {activeTab === 'profile' && userData && (
+            <div className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Информация о пользователе</h3>
+                  <div className="mt-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Логин</label>
+                      <div className="mt-1 text-sm text-gray-900">{userData.login || 'Не указан'}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <div className="mt-1 text-sm text-gray-900">{userData.email || 'Не указан'}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ID пользователя</label>
+                      <div className="mt-1 text-sm text-gray-900">{userData.id || 'Не указан'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'devices' && (
             <div className="divide-y divide-gray-200">
               {mockUserData.devices.map((device) => (
