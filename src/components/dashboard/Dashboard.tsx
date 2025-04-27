@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, Shield, Globe, User } from 'lucide-react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, Shield, Globe, User, Trash2 } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
+import { deviceService } from '../../services/deviceService';
 
 interface UserData {
   id: string;
@@ -10,15 +11,63 @@ interface UserData {
   email: string;
 }
 
+interface Device {
+  id: string;
+  ip: string;
+  deviceName: string;
+  issuedAt: string;
+  userId: string;
+}
+
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
     setIsLoggedIn(true);
+  };
+
+  const fetchDevices = async () => {
+    try {
+      setIsLoading(true);
+      const response = await deviceService.getDevices();
+      setDevices(response.payload || []);
+    } catch (error) {
+      console.error('Ошибка при получении устройств:', error);
+      setError('Ошибка при загрузке устройств');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteDevice = async (deviceId: string) => {
+    try {
+      setIsLoading(true);
+      await deviceService.deleteDevice(deviceId);
+      // Обновляем список устройств после удаления
+      await fetchDevices();
+    } catch (error) {
+      console.error('Ошибка при удалении устройства:', error);
+      setError('Ошибка при удалении устройства');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   useEffect(() => {
@@ -39,6 +88,8 @@ export function Dashboard() {
             email: response.payload.email
           });
           setIsLoggedIn(true);
+          // Загружаем устройства после успешной авторизации
+          await fetchDevices();
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -166,25 +217,47 @@ export function Dashboard() {
           )}
 
           {activeTab === 'devices' && (
-            <div className="divide-y divide-gray-200">
-              {mockUserData.devices.map((device) => (
-                <div key={device.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center">
-                    <Smartphone className="h-10 w-10 text-gray-400" />
-                    <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">{device.name}</h3>
-                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                        <span>{device.type}</span>
-                        <span>•</span>
-                        <span>Последняя активность: {device.lastActive}</span>
-                        <span>•</span>
-                        <span>{device.location}</span>
-                      </div>
+            <div className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Устройства</h3>
+                  {isLoading ? (
+                    <div className="mt-4 text-center text-gray-500">Загрузка устройств...</div>
+                  ) : error ? (
+                    <div className="mt-4 text-center text-red-500">{error}</div>
+                  ) : devices.length === 0 ? (
+                    <div className="mt-4 text-center text-gray-500">Устройства не найдены</div>
+                  ) : (
+                    <div className="mt-4 space-y-4">
+                      {devices.map((device) => (
+                        <div key={device.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <Smartphone className="h-6 w-6 text-gray-400" />
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {device.deviceName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                IP: {device.ip}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Последняя активность: {formatDate(device.issuedAt)}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteDevice(device.id)}
+                            className="text-red-500 hover:text-red-700"
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
           )}
 
