@@ -30,6 +30,7 @@ export function Dashboard() {
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
     setIsLoggedIn(true);
+    setActiveTab('devices');
   };
 
   const fetchDevices = async () => {
@@ -88,6 +89,7 @@ export function Dashboard() {
             email: response.payload.email
           });
           setIsLoggedIn(true);
+          setActiveTab('devices');
           // Загружаем устройства после успешной авторизации
           await fetchDevices();
         } else {

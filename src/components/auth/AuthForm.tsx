@@ -176,13 +176,22 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
           </div>
         </div>
 
-        <button
-          onClick={handleVKLogin}
-          className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0077FF] hover:bg-[#0066CC] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077FF] transition-colors"
-        >
-          <LogIn className="h-5 w-5" />
-          ВКонтакте
-        </button>
+        <div className="space-y-4">
+          <button
+            onClick={() => {}}
+            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FC3F1D] hover:bg-[#E6351A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC3F1D] transition-colors"
+          >
+            Яндекс
+          </button>
+
+          <button
+            onClick={handleVKLogin}
+            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0077FF] hover:bg-[#0066CC] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077FF] transition-colors"
+          >
+            <LogIn className="h-5 w-5" />
+            ВКонтакте
+          </button>
+        </div>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
