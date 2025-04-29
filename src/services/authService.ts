@@ -191,46 +191,4 @@ export const authService = {
       throw error;
     }
   },
-
-  async loginWithYandex(data: {
-    yandexId: string;
-    email: string;
-    login: string;
-    accessToken: string;
-  }) {
-    try {
-      const response = await api.post('/auth/yandex-login', data);
-
-      if (response.data.payload?.accessToken) {
-        localStorage.setItem('accessToken', response.data.payload.accessToken);
-      } else {
-        throw new Error('Access token не получен');
-      }
-
-      if (response.data.payload?.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.payload.refreshToken);
-        // Получаем deviceId из refreshToken
-        const decodedToken = decodeJWT(response.data.payload.refreshToken);
-        if (decodedToken?.deviceId) {
-          localStorage.setItem('currentDeviceId', decodedToken.deviceId);
-        } else {
-          console.warn('DeviceId не найден в refreshToken');
-        }
-      } else {
-        throw new Error('Refresh token не получен');
-      }
-
-      return response.data;
-    } catch (error) {
-      // В случае ошибки очищаем токены
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('currentDeviceId');
-
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при авторизации через Яндекс');
-      }
-      throw error;
-    }
-  },
 }; 

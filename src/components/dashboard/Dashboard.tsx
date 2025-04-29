@@ -31,6 +31,8 @@ export function Dashboard() {
     setUserData(userData);
     setIsLoggedIn(true);
     setActiveTab('profile');
+    // Загружаем устройства после успешного логина
+    fetchDevices();
   };
 
   const fetchDevices = async () => {
