@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, Shield, Globe, User, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2 } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
@@ -30,7 +30,7 @@ export function Dashboard() {
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
     setIsLoggedIn(true);
-    setActiveTab('devices');
+    setActiveTab('profile');
   };
 
   const fetchDevices = async () => {
@@ -89,7 +89,7 @@ export function Dashboard() {
             email: response.payload.email
           });
           setIsLoggedIn(true);
-          setActiveTab('devices');
+          setActiveTab('profile');
           // Загружаем устройства после успешной авторизации
           await fetchDevices();
         } else {
