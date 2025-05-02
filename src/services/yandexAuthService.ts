@@ -4,7 +4,7 @@ import { API_URL } from './config';
 const YANDEX_CLIENT_ID = '3bc63d5df8584382ae6e05da843eea96'; // Замените на ваш ID клиента Яндекс
 const YANDEX_OAUTH_URL = 'https://oauth.yandex.ru';
 const YANDEX_API_URL = 'https://login.yandex.ru';
-const REDIRECT_URI = 'http://localhost:3000/api/v1/yandex/callback';
+const REDIRECT_URI = 'http://localhost:3010/api/v1/yandex/callback';
 
 export const yandexAuthService = {
   /**
