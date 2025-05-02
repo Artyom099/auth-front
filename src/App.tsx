@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { VKCallback } from './components/auth/VKCallback';
+import { YandexCallback } from './components/auth/YandexCallback';
 import { AuthForm } from './components/auth/AuthForm';
 
 function AppRoutes() {
@@ -12,6 +13,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/auth" element={<AuthForm onLoginSuccess={() => navigate('/dashboard')} />} />
       <Route path="/auth/vk/callback" element={<VKCallback />} />
+      <Route path="/yandex-callback" element={<YandexCallback />} />
     </Routes>
   );
 }
