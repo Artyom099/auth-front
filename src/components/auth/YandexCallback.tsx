@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { yandexAuthService } from '../../services/yandexAuthService';
 import { authService } from '../../services/authService';
+import Cookies from 'js-cookie';
 
 export function YandexCallback() {
   const [error, setError] = useState<string | null>(null);
@@ -11,20 +11,25 @@ export function YandexCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Получаем код авторизации из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        console.log({ code });
+        // Получаем токены из куки
+        console.log('Cookies', Cookies);
+        const accessToken = Cookies.get('accessToken');
+        const refreshToken = Cookies.get('refreshToken');
         
-        if (!code) {
-          throw new Error('Код авторизации не получен');
+        if (!accessToken) {
+          throw new Error('Access token не получен');
         }
 
-        // Обрабатываем код и получаем токены
-        await yandexAuthService.handleCallback(code);
+        if (!refreshToken) {
+          throw new Error('Refresh token не получен');
+        }
+
+        // Сохраняем токены в localStorage
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
         
-        // После получения токенов запрашиваем данные пользователя
-        const userData = await authService.getMe();
+        // После сохранения токенов запрашиваем данные пользователя
+        await authService.getMe();
         
         // При успешной авторизации перенаправляем на dashboard
         navigate('/dashboard');

@@ -6,7 +6,7 @@ const YANDEX_OAUTH_URL = 'https://oauth.yandex.ru';
 const REDIRECT_URI = 'http://localhost:3010/api/v1/yandex/callback';
 
 export const yandexAuthService = {
-    /**
+  /**
    * Обработка логина через Яндекс (перенаправление на страницу Яндекс)
    */
   login() {
