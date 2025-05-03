@@ -10,17 +10,27 @@ export function YandexCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log('Starting callback handling...');
+      
       try {
+        console.log('Current URL:', window.location.href);
+        console.log('Current path:', window.location.pathname);
+        console.log('Current search:', window.location.search);
+        
+        // Логируем все куки, которые пришли с бэка
+        console.log('All cookies from backend:', document.cookie);
+        
         // Получаем токены из куки
-        console.log('Cookies', Cookies);
         const accessToken = Cookies.get('accessToken');
         const refreshToken = Cookies.get('refreshToken');
         
         if (!accessToken) {
+          console.log('Access token is missing');
           throw new Error('Access token не получен');
         }
 
         if (!refreshToken) {
+          console.log('Refresh token is missing');
           throw new Error('Refresh token не получен');
         }
 
@@ -34,7 +44,6 @@ export function YandexCallback() {
         // При успешной авторизации перенаправляем на dashboard
         navigate('/dashboard');
       } catch (error) {
-        console.error('Ошибка при обработке callback:', error);
         setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
       } finally {
         setLoading(false);
