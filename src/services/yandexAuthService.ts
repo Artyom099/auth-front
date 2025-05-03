@@ -3,10 +3,16 @@ import { API_URL } from './config';
 
 const YANDEX_CLIENT_ID = '3bc63d5df8584382ae6e05da843eea96'; // Замените на ваш ID клиента Яндекс
 const YANDEX_OAUTH_URL = 'https://oauth.yandex.ru';
-const YANDEX_API_URL = 'https://login.yandex.ru';
 const REDIRECT_URI = 'http://localhost:3010/api/v1/yandex/callback';
 
 export const yandexAuthService = {
+    /**
+   * Обработка логина через Яндекс (перенаправление на страницу Яндекс)
+   */
+  login() {
+    window.location.href = this.getAuthUrl();
+  },
+
   /**
    * Получение URL для авторизации через Яндекс
    */
@@ -28,7 +34,7 @@ export const yandexAuthService = {
   async handleCallback(code: string) {
     try {
       // Запрос к бэкенду для обработки кода и получения информации о пользователе
-      const response = await axios.post(`${API_URL}/auth/yandex-callback`, { code });
+      const response = await axios.post(`${API_URL}/yandex/callback`, { code });
       
       if (response.data.payload?.accessToken) {
         localStorage.setItem('accessToken', response.data.payload.accessToken);
@@ -50,11 +56,4 @@ export const yandexAuthService = {
       throw error;
     }
   },
-
-  /**
-   * Обработка логина через Яндекс (перенаправление на страницу Яндекс)
-   */
-  login() {
-    window.location.href = this.getAuthUrl();
-  }
 }; 

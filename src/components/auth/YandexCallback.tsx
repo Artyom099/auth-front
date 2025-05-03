@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { yandexAuthService } from '../../services/yandexAuthService';
+import { authService } from '../../services/authService';
 
 export function YandexCallback() {
   const [error, setError] = useState<string | null>(null);
@@ -13,6 +14,7 @@ export function YandexCallback() {
         // Получаем код авторизации из URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
+        console.log({ code });
         
         if (!code) {
           throw new Error('Код авторизации не получен');
@@ -21,8 +23,11 @@ export function YandexCallback() {
         // Обрабатываем код и получаем токены
         await yandexAuthService.handleCallback(code);
         
-        // При успешной авторизации перенаправляем на главную страницу
-        navigate('/');
+        // После получения токенов запрашиваем данные пользователя
+        const userData = await authService.getMe();
+        
+        // При успешной авторизации перенаправляем на dashboard
+        navigate('/dashboard');
       } catch (error) {
         console.error('Ошибка при обработке callback:', error);
         setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
