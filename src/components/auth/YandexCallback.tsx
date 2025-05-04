@@ -10,27 +10,16 @@ export function YandexCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      console.log('Starting callback handling...');
-      
       try {
-        console.log('Current URL:', window.location.href);
-        console.log('Current path:', window.location.pathname);
-        console.log('Current search:', window.location.search);
-        
-        // Логируем все куки, которые пришли с бэка
-        console.log('All cookies from backend:', document.cookie);
-        
         // Получаем токены из куки
         const accessToken = Cookies.get('accessToken');
         const refreshToken = Cookies.get('refreshToken');
         
         if (!accessToken) {
-          console.log('Access token is missing');
           throw new Error('Access token не получен');
         }
 
         if (!refreshToken) {
-          console.log('Refresh token is missing');
           throw new Error('Refresh token не получен');
         }
 
@@ -39,10 +28,16 @@ export function YandexCallback() {
         localStorage.setItem('refreshToken', refreshToken);
         
         // После сохранения токенов запрашиваем данные пользователя
-        await authService.getMe();
+        const userData = await authService.getMe();
         
-        // При успешной авторизации перенаправляем на dashboard
-        navigate('/dashboard');
+        if (!userData.payload) {
+          throw new Error('Данные пользователя не получены');
+        }
+
+        // При успешной авторизации перенаправляем на dashboard с выбранной вкладкой Профиль
+        navigate('/dashboard?tab=profile', {
+          state: { userData: userData.payload }
+        });
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
       } finally {

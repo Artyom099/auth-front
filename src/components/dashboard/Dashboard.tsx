@@ -4,6 +4,7 @@ import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
+import { useLocation } from 'react-router-dom';
 
 interface UserData {
   id: string;
@@ -20,6 +21,7 @@ interface Device {
 }
 
 export function Dashboard() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -83,7 +85,6 @@ export function Dashboard() {
 
       try {
         const response = await authService.getMe();
-        console.log('User data response:', response);
         if (response.payload) {
           setUserData({
             id: response.payload.id,
@@ -105,8 +106,16 @@ export function Dashboard() {
       }
     };
 
-    checkAuth();
-  }, []);
+    // Проверяем, есть ли данные пользователя в состоянии навигации
+    if (location.state?.userData) {
+      setUserData(location.state.userData);
+      setIsLoggedIn(true);
+      setActiveTab('profile');
+      fetchDevices();
+    } else {
+      checkAuth();
+    }
+  }, [location.state]);
 
   const handleLogout = async () => {
     try {
