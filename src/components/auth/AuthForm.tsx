@@ -196,7 +196,8 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
 
           <button
             onClick={handleVKLogin}
-            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0077FF] hover:bg-[#0066CC] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077FF] transition-colors"
+            disabled
+            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-200 text-gray-400 cursor-not-allowed"
           >
             <LogIn className="h-5 w-5" />
             ВКонтакте
