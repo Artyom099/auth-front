@@ -344,10 +344,10 @@ export function Dashboard() {
                         <MoreVertical className="h-5 w-5" />
                       </button>
                       {openMenuId === row.id && (
-                        <div className="fixed z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                          <div className="py-1" role="menu" aria-orientation="vertical">
+                        <div className="absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                          <div className="py-1 flex flex-col" role="menu" aria-orientation="vertical">
                             <button
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100"
                               role="menuitem"
                             >
                               Выдать доступ
