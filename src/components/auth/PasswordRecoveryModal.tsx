@@ -21,7 +21,7 @@ export function PasswordRecoveryModal({ email, onClose }: PasswordRecoveryModalP
     setIsLoading(true);
 
     try {
-      await authService.confirmPasswordRecovery(email, code);
+      await authService.confirmPasswordRecovery(code);
       setStep('password');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Ошибка при подтверждении кода');
@@ -36,7 +36,7 @@ export function PasswordRecoveryModal({ email, onClose }: PasswordRecoveryModalP
     setIsLoading(true);
 
     try {
-      await authService.updatePassword(email, code, newPassword);
+      await authService.updatePassword(newPassword, code);
       setSuccess('Пароль успешно обновлен');
       setTimeout(() => {
         onClose();
