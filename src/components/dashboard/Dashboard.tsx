@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2, Shield, Lock, MoreVertical } from 'lucide-react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2, Shield, Lock, MoreVertical, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
@@ -7,7 +7,6 @@ import { deviceService } from '../../services/deviceService';
 import { roleService, Role } from '../../services/roleService';
 import { accessObjectService, AccessObject, Action } from '../../services/accessObjectService';
 import { useLocation } from 'react-router-dom';
-import { PasswordRecoveryModal } from '../auth/PasswordRecoveryModal';
 
 interface UserData {
   id: string;
@@ -39,6 +38,11 @@ export function Dashboard() {
   const [accessObjectsError, setAccessObjectsError] = useState<string | null>(null);
   const [isAccessObjectsLoading, setIsAccessObjectsLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [recoveryStep, setRecoveryStep] = useState<'initial' | 'code' | 'password'>('initial');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
@@ -191,9 +195,32 @@ export function Dashboard() {
   const handlePasswordRecovery = async () => {
     try {
       await authService.passwordRecovery(userData?.email || '');
-      setShowPasswordRecovery(true);
+      setRecoveryStep('code');
     } catch (error) {
       console.error('Ошибка при запросе смены пароля:', error);
+    }
+  };
+
+  const handleConfirmCode = async () => {
+    try {
+      await authService.confirmPasswordRecovery(recoveryCode);
+      setRecoveryStep('password');
+    } catch (error) {
+      console.error('Ошибка при подтверждении кода:', error);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    try {
+      await authService.updatePassword(newPassword, recoveryCode);
+      setRecoveryStep('initial');
+      setRecoveryCode('');
+      setNewPassword('');
+      setShowPassword(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Ошибка при обновлении пароля:', error);
     }
   };
 
@@ -486,15 +513,109 @@ export function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <button
-                    onClick={handlePasswordRecovery}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Обновить пароль
-                  </button>
+                <div className="mt-6 space-y-4">
+                  {recoveryStep === 'initial' && (
+                    <button
+                      onClick={handlePasswordRecovery}
+                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Обновить пароль
+                    </button>
+                  )}
+                  {recoveryStep === 'code' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Код подтверждения
+                        </label>
+                        <input
+                          type="text"
+                          value={recoveryCode}
+                          onChange={(e) => setRecoveryCode(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Введите код из письма"
+                          required
+                        />
+                      </div>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={handleConfirmCode}
+                          disabled={isLoading}
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                        >
+                          {isLoading ? 'Подтверждение...' : 'Подтвердить код'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRecoveryStep('initial');
+                            setRecoveryCode('');
+                          }}
+                          className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {recoveryStep === 'password' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Новый пароль
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Введите новый пароль"
+                            required
+                            minLength={6}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={handleUpdatePassword}
+                          disabled={isLoading}
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                        >
+                          {isLoading ? 'Обновление...' : 'Обновить пароль'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRecoveryStep('initial');
+                            setNewPassword('');
+                            setShowPassword(false);
+                          }}
+                          className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {showSuccessMessage && (
+            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-100 border border-green-400 text-green-700 px-6 py-3 rounded-lg flex items-center space-x-2 shadow-lg z-50">
+              <CheckCircle className="h-5 w-5" />
+              <span>Пароль успешно обновлен</span>
             </div>
           )}
 
@@ -621,13 +742,6 @@ export function Dashboard() {
           )}
         </div>
       </main>
-
-      {showPasswordRecovery && userData?.email && (
-        <PasswordRecoveryModal
-          email={userData.email}
-          onClose={() => setShowPasswordRecovery(false)}
-        />
-      )}
     </div>
   );
 }

@@ -191,4 +191,17 @@ export const authService = {
       throw error;
     }
   },
+
+  async confirmAndUpdatePassword(code: string, newPassword: string) {
+    try {
+      await this.confirmPasswordRecovery(code);
+      await this.updatePassword(newPassword, code);
+      return { success: true };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Ошибка при обновлении пароля');
+      }
+      throw error;
+    }
+  },
 }; 
