@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2, Shield } from 'lucide-react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2, Shield, Lock, MoreVertical } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
 import { roleService, Role } from '../../services/roleService';
+import { accessObjectService, AccessObject, Action } from '../../services/accessObjectService';
 import { useLocation } from 'react-router-dom';
 import { PasswordRecoveryModal } from '../auth/PasswordRecoveryModal';
 
@@ -34,6 +35,10 @@ export function Dashboard() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const [isRolesLoading, setIsRolesLoading] = useState(false);
+  const [accessObjects, setAccessObjects] = useState<AccessObject[]>([]);
+  const [accessObjectsError, setAccessObjectsError] = useState<string | null>(null);
+  const [isAccessObjectsLoading, setIsAccessObjectsLoading] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
@@ -96,6 +101,24 @@ export function Dashboard() {
     }
   };
 
+  const fetchAccessObjects = async () => {
+    try {
+      setIsAccessObjectsLoading(true);
+      const response = await accessObjectService.getAccessObjectTree();
+      console.log('Access Objects Response:', response); // Отладочная информация
+      if (response.payload) {
+        setAccessObjects(response.payload);
+      } else {
+        setAccessObjects([]);
+      }
+    } catch (error) {
+      console.error('Ошибка при получении объектов доступа:', error);
+      setAccessObjectsError('Ошибка при загрузке объектов доступа');
+    } finally {
+      setIsAccessObjectsLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('ru-RU', {
@@ -125,8 +148,8 @@ export function Dashboard() {
           });
           setIsLoggedIn(true);
           setActiveTab('profile');
-          // Загружаем устройства и роли после успешной авторизации
-          await Promise.all([fetchDevices(), fetchRoles()]);
+          // Загружаем устройства, роли и объекты доступа после успешной авторизации
+          await Promise.all([fetchDevices(), fetchRoles(), fetchAccessObjects()]);
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -143,7 +166,7 @@ export function Dashboard() {
       setUserData(location.state.userData);
       setIsLoggedIn(true);
       setActiveTab('profile');
-      Promise.all([fetchDevices(), fetchRoles()]);
+      Promise.all([fetchDevices(), fetchRoles(), fetchAccessObjects()]);
     } else {
       checkAuth();
     }
@@ -172,6 +195,181 @@ export function Dashboard() {
     } catch (error) {
       console.error('Ошибка при запросе смены пароля:', error);
     }
+  };
+
+  const renderAccessObject = (object: AccessObject, level: number = 0) => {
+    const paddingLeft = `${level * 1.5}rem`;
+    
+    return (
+      <div key={object.name} style={{ paddingLeft }}>
+        <div className="flex items-center space-x-2 py-2">
+          <div className="flex items-center space-x-2">
+            {object.type === 'module' ? (
+              <Lock className="h-5 w-5 text-blue-500" />
+            ) : (
+              <Shield className="h-5 w-5 text-green-500" />
+            )}
+            <span className="font-medium">{object.name}</span>
+            <span className="text-sm text-gray-500">({object.type})</span>
+          </div>
+        </div>
+        
+        {object.actions.length > 0 && (
+          <div className="ml-8 space-y-1">
+            {object.actions.map((action) => (
+              <div key={action.name} className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">{action.name}</span>
+                <span className={`text-xs px-2 py-1 rounded ${
+                  action.type === 'read' ? 'bg-blue-100 text-blue-800' :
+                  action.type === 'write' ? 'bg-green-100 text-green-800' :
+                  'bg-purple-100 text-purple-800'
+                }`}>
+                  {action.type}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {object.children?.map((child) => renderAccessObject(child, level + 1))}
+      </div>
+    );
+  };
+
+  const renderAccessObjectsTable = () => {
+    console.log('Rendering table with objects:', accessObjects);
+    
+    if (!accessObjects || accessObjects.length === 0) {
+      return <div className="text-center text-gray-500">Нет данных для отображения</div>;
+    }
+
+    const rows: Array<{
+      id: string;
+      name: string;
+      type: string;
+      action: Action;
+      level: number;
+    }> = [];
+
+    const processObject = (object: AccessObject, level: number = 0) => {
+      if (object.actions && object.actions.length > 0) {
+        object.actions.forEach(action => {
+          rows.push({
+            id: `${object.name}-${action.name}-${level}`,
+            name: object.name,
+            type: object.type,
+            action,
+            level
+          });
+        });
+      } else {
+        // Если у объекта нет действий, добавляем одну строку с пустым действием
+        rows.push({
+          id: `${object.name}-${level}`,
+          name: object.name,
+          type: object.type,
+          action: { name: '-', type: 'read' },
+          level
+        });
+      }
+
+      if (object.children && object.children.length > 0) {
+        object.children.forEach(child => processObject(child, level + 1));
+      }
+    };
+
+    accessObjects.forEach(object => processObject(object));
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Название
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Тип
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Действие
+              </th>
+              <th scope="col" className="relative px-6 py-3">
+                <span className="sr-only">Управление</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {rows.map((row) => (
+              <tr key={row.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div style={{ marginLeft: `${row.level * 1.5}rem` }} className="flex items-center">
+                      {row.type === 'module' ? (
+                        <Lock className="h-5 w-5 text-blue-500 mr-2" />
+                      ) : (
+                        <Shield className="h-5 w-5 text-green-500 mr-2" />
+                      )}
+                      <span className="text-sm font-medium text-gray-900">{row.name}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    row.type === 'module' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {row.type}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {row.action.name !== '-' ? (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      row.action.type === 'read' ? 'bg-blue-100 text-blue-800' :
+                      row.action.type === 'write' ? 'bg-green-100 text-green-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {row.action.name}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  {row.action.name !== '-' && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                        className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </button>
+                      {openMenuId === row.id && (
+                        <div className="fixed z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                          <div className="py-1" role="menu" aria-orientation="vertical">
+                            <button
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Выдать доступ
+                            </button>
+                            <button
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Отозвать доступ
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   if (!isLoggedIn) {
@@ -251,6 +449,17 @@ export function Dashboard() {
             >
               <Shield className="h-5 w-5 mr-2" />
               Роли
+            </button>
+            <button
+              onClick={() => setActiveTab('access-objects')}
+              className={`${
+                activeTab === 'access-objects'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              <Lock className="h-5 w-5 mr-2" />
+              Объекты доступа
             </button>
           </nav>
         </div>
@@ -383,6 +592,27 @@ export function Dashboard() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'access-objects' && (
+            <div className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Объекты доступа</h3>
+                  {isAccessObjectsLoading ? (
+                    <div className="mt-4 text-center text-gray-500">Загрузка объектов доступа...</div>
+                  ) : accessObjectsError ? (
+                    <div className="mt-4 text-center text-red-500">{accessObjectsError}</div>
+                  ) : accessObjects.length === 0 ? (
+                    <div className="mt-4 text-center text-gray-500">Объекты доступа не найдены</div>
+                  ) : (
+                    <div className="mt-4">
+                      {renderAccessObjectsTable()}
                     </div>
                   )}
                 </div>
