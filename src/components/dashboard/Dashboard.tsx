@@ -125,8 +125,8 @@ export function Dashboard() {
           });
           setIsLoggedIn(true);
           setActiveTab('profile');
-          // Загружаем устройства после успешной авторизации
-          await fetchDevices();
+          // Загружаем устройства и роли после успешной авторизации
+          await Promise.all([fetchDevices(), fetchRoles()]);
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -143,17 +143,11 @@ export function Dashboard() {
       setUserData(location.state.userData);
       setIsLoggedIn(true);
       setActiveTab('profile');
-      fetchDevices();
+      Promise.all([fetchDevices(), fetchRoles()]);
     } else {
       checkAuth();
     }
   }, [location.state]);
-
-  useEffect(() => {
-    if (activeTab === 'roles') {
-      fetchRoles();
-    }
-  }, [activeTab]);
 
   const handleLogout = async () => {
     try {
