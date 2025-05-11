@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2 } from 'lucide-react';
+import { Smartphone, Apple as Apps, ChevronRight, LogOut, User, Trash2, Shield } from 'lucide-react';
 import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
+import { roleService, Role } from '../../services/roleService';
 import { useLocation } from 'react-router-dom';
 import { PasswordRecoveryModal } from '../auth/PasswordRecoveryModal';
 
@@ -30,6 +31,9 @@ export function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesError, setRolesError] = useState<string | null>(null);
+  const [isRolesLoading, setIsRolesLoading] = useState(false);
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
@@ -63,6 +67,32 @@ export function Dashboard() {
       setError('Ошибка при удалении устройства');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      setIsRolesLoading(true);
+      const response = await roleService.getRoles();
+      setRoles(response.payload || []);
+    } catch (error) {
+      console.error('Ошибка при получении ролей:', error);
+      setRolesError('Ошибка при загрузке ролей');
+    } finally {
+      setIsRolesLoading(false);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    try {
+      setIsRolesLoading(true);
+      await roleService.deleteRole(roleId);
+      await fetchRoles();
+    } catch (error) {
+      console.error('Ошибка при удалении роли:', error);
+      setRolesError('Ошибка при удалении роли');
+    } finally {
+      setIsRolesLoading(false);
     }
   };
 
@@ -118,6 +148,12 @@ export function Dashboard() {
       checkAuth();
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (activeTab === 'roles') {
+      fetchRoles();
+    }
+  }, [activeTab]);
 
   const handleLogout = async () => {
     try {
@@ -210,6 +246,17 @@ export function Dashboard() {
             >
               <Apps className="h-5 w-5 mr-2" />
               Сервисы
+            </button>
+            <button
+              onClick={() => setActiveTab('roles')}
+              className={`${
+                activeTab === 'roles'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              <Shield className="h-5 w-5 mr-2" />
+              Роли
             </button>
           </nav>
         </div>
@@ -311,6 +358,41 @@ export function Dashboard() {
                   <ChevronRight className="h-5 w-5 text-gray-400" />
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'roles' && (
+            <div className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Роли</h3>
+                  {isRolesLoading ? (
+                    <div className="mt-4 text-center text-gray-500">Загрузка ролей...</div>
+                  ) : rolesError ? (
+                    <div className="mt-4 text-center text-red-500">{rolesError}</div>
+                  ) : roles.length === 0 ? (
+                    <div className="mt-4 text-center text-gray-500">Роли не найдены</div>
+                  ) : (
+                    <div className="mt-4 space-y-4">
+                      {roles.map((role, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <Shield className="h-6 w-6 text-gray-400" />
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {role.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {role.description}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
