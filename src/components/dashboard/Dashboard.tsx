@@ -5,6 +5,7 @@ import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
 import { useLocation } from 'react-router-dom';
+import { PasswordRecoveryModal } from '../auth/PasswordRecoveryModal';
 
 interface UserData {
   id: string;
@@ -28,6 +29,7 @@ export function Dashboard() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
@@ -133,6 +135,15 @@ export function Dashboard() {
     }
   };
 
+  const handlePasswordRecovery = async () => {
+    try {
+      await authService.passwordRecovery(userData?.email || '');
+      setShowPasswordRecovery(true);
+    } catch (error) {
+      console.error('Ошибка при запросе смены пароля:', error);
+    }
+  };
+
   if (!isLoggedIn) {
     return <AuthForm onLoginSuccess={handleLoginSuccess} />;
   }
@@ -225,6 +236,14 @@ export function Dashboard() {
                     </div>
                   </div>
                 </div>
+                <div className="mt-6">
+                  <button
+                    onClick={handlePasswordRecovery}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Обновить пароль
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -296,6 +315,13 @@ export function Dashboard() {
           )}
         </div>
       </main>
+
+      {showPasswordRecovery && userData?.email && (
+        <PasswordRecoveryModal
+          email={userData.email}
+          onClose={() => setShowPasswordRecovery(false)}
+        />
+      )}
     </div>
   );
 }
