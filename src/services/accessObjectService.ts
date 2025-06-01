@@ -53,8 +53,19 @@ export const accessObjectService = {
       const response = await api.post('/admin/access_object/calculate_rights', { roleName });
       return response.data;
     } catch (error) {
-      console.error('Error fetching access object tree:', error);
-      throw error;
+      throw this.handleError(error);
+    }
+  },
+
+  async reassignRights(roleName: string, actionNames: string[]): Promise<ApiResponse<void>> {
+    try {
+      const response = await api.post('/admin/right/reassign', {
+        roleName,
+        actionNames
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
   }
 }; 

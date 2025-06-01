@@ -49,6 +49,7 @@ export function Dashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [isUpdatingRights, setIsUpdatingRights] = useState(false);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -241,6 +242,101 @@ export function Dashboard() {
     }
   };
 
+  const handleGrantAccess = async (actionName: string) => {
+    if (!selectedRole) return;
+    
+    try {
+      setIsUpdatingRights(true);
+      
+      // Собираем все действия, которые уже были выданы роли
+      const grantedActions = new Set<string>();
+      
+      // Рекурсивно собираем все действия из дерева объектов
+      const collectActions = (objects: TNestedTreeItem[]) => {
+        objects.forEach(object => {
+          if (object.actions) {
+            object.actions.forEach(action => {
+              // Добавляем только те действия, которые уже были выданы роли
+              if (action.ownGrant) {
+                grantedActions.add(action.actionName);
+              }
+            });
+          }
+          if (object.children) {
+            collectActions(object.children);
+          }
+        });
+      };
+
+      // Собираем все действия из текущего состояния
+      collectActions(accessObjects);
+      
+      // Добавляем новое действие
+      grantedActions.add(actionName);
+
+      const actionNames = Array.from(grantedActions);
+      
+      console.log('Granting access. Sending to API:', {
+        roleName: selectedRole,
+        actionNames
+      });
+
+      await accessObjectService.reassignRights(selectedRole, actionNames);
+      await fetchAccessObjects(selectedRole);
+    } catch (error) {
+      console.error('Ошибка при выдаче доступа:', error);
+    } finally {
+      setIsUpdatingRights(false);
+      setOpenMenuId(null);
+    }
+  };
+
+  const handleRevokeAccess = async (actionName: string) => {
+    if (!selectedRole) return;
+    
+    try {
+      setIsUpdatingRights(true);
+      
+      // Собираем все действия, которые уже были выданы роли
+      const grantedActions = new Set<string>();
+      
+      // Рекурсивно собираем все действия из дерева объектов
+      const collectActions = (objects: TNestedTreeItem[]) => {
+        objects.forEach(object => {
+          if (object.actions) {
+            object.actions.forEach(action => {
+              // Добавляем только те действия, которые уже были выданы роли, кроме отзываемого
+              if (action.ownGrant && action.actionName !== actionName) {
+                grantedActions.add(action.actionName);
+              }
+            });
+          }
+          if (object.children) {
+            collectActions(object.children);
+          }
+        });
+      };
+
+      // Собираем все действия из текущего состояния
+      collectActions(accessObjects);
+
+      const actionNames = Array.from(grantedActions);
+      
+      console.log('Revoking access. Sending to API:', {
+        roleName: selectedRole,
+        actionNames
+      });
+
+      await accessObjectService.reassignRights(selectedRole, actionNames);
+      await fetchAccessObjects(selectedRole);
+    } catch (error) {
+      console.error('Ошибка при отзыве доступа:', error);
+    } finally {
+      setIsUpdatingRights(false);
+      setOpenMenuId(null);
+    }
+  };
+
   const renderAccessObjectsTable = () => {
     console.log('Rendering table with objects:', accessObjects);
     
@@ -412,6 +508,7 @@ export function Dashboard() {
                       <button
                         onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
                         className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                        disabled={isUpdatingRights}
                       >
                         <MoreVertical className="h-5 w-5" />
                       </button>
@@ -419,13 +516,17 @@ export function Dashboard() {
                         <div className="absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                           <div className="py-1 flex flex-col" role="menu" aria-orientation="vertical">
                             <button
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100"
+                              onClick={() => handleGrantAccess(row.action.actionName)}
+                              disabled={isUpdatingRights}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               role="menuitem"
                             >
                               Выдать доступ
                             </button>
                             <button
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => handleRevokeAccess(row.action.actionName)}
+                              disabled={isUpdatingRights}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               role="menuitem"
                             >
                               Отозвать доступ
