@@ -296,16 +296,25 @@ export function Dashboard() {
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Название
+                Объект доступа
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Тип
+                Тип объекта
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Действие
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Доступ
+                Тип действия
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Описание
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Прямой доступ
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Родительский доступ
               </th>
               <th scope="col" className="relative px-6 py-3">
                 <span className="sr-only">Управление</span>
@@ -352,11 +361,36 @@ export function Dashboard() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  {row.action.actionName !== '-' ? (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
+                      row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {row.action.actionType}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {row.action.actionName !== '-' ? row.action.actionDescription : '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   {row.action.actionName !== '-' && (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       row.action.ownGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {row.action.ownGrant ? 'Есть доступ' : 'Нет доступа'}
+                      {row.action.ownGrant ? 'Есть' : 'Нет'}
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {row.action.actionName !== '-' && (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      row.action.parentGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {row.action.parentGrant ? 'Есть' : 'Нет'}
                     </span>
                   )}
                 </td>
