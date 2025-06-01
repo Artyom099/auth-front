@@ -131,12 +131,13 @@ export const authService = {
       if (!token || !refreshToken) {
         throw new Error('Токены не найдены');
       }
-      
+
       await api.post('/auth/logout', {}, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          cookie: `refreshToken=${refreshToken}`
         },
-        withCredentials: true // Для отправки refreshToken в cookies
+        withCredentials: true
       });
       
       // Очищаем токены
