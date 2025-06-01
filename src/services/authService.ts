@@ -135,8 +135,6 @@ export const authService = {
         .split('; ')
         .find(row => row.startsWith('refreshToken='))
         ?.split('=')[1];
-
-      console.log({refreshToken});
       
       if (!token || !refreshToken) {
         throw new Error('Токены не найдены');
