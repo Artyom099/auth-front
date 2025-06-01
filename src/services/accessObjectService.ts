@@ -1,7 +1,45 @@
-import axios from 'axios';
+import axios from "axios";
+import { API_URL } from "./config";
 
-const API_URL = 'http://localhost:3010/api/v1';
+export enum EAccessObjectType {
+  APP = 'APP',
+  TAB = 'TAB',
+  BUTTON = 'BUTTON',
+}
 
+export enum EActionType {
+  READ = 'r',
+  WRITE = 'w',
+  SPECIAL = 's'
+}
+
+export type TFlatTreeItem = {
+  objectName: string;
+  objectParentName: string;
+  objectType: EAccessObjectType;
+  actionName: string;
+  actionType: EActionType;
+  actionDescription: string;
+  ownGrant: boolean;
+  parentGrant: boolean;
+};
+
+export type TActionGrant = {
+  actionName: string;
+  actionType: EActionType;
+  actionDescription: string;
+  ownGrant: boolean;
+  parentGrant: boolean;
+};
+
+export type TNestedTreeItem = {
+  objectName: string;
+  objectType: EAccessObjectType;
+  actions?: TActionGrant[];
+  children?: TNestedTreeItem[];
+};
+
+// Создаем экземпляр axios с базовыми настройками
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -9,40 +47,13 @@ const api = axios.create({
   }
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export interface Action {
-  name: string;
-  type: 'read' | 'write' | 'admin';
-}
-
-export interface AccessObject {
-  name: string;
-  type: 'module' | 'entity';
-  actions: Action[];
-  children?: AccessObject[];
-}
-
 export const accessObjectService = {
-  async getAccessObjectTree() {
+  async getAccessObjectTree(roleName: string) {
     try {
-      const response = await api.get('/admin/access_object/tree');
-      
-      if (response.data.hasError) {
-        throw new Error(response.data.message || 'Ошибка при получении дерева объектов доступа');
-      }
-
+      const response = await api.post('/admin/access_object/calculate_rights', { roleName });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении дерева объектов доступа');
-      }
+      console.error('Error fetching access object tree:', error);
       throw error;
     }
   }

@@ -5,7 +5,13 @@ import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
 import { roleService, Role } from '../../services/roleService';
-import { accessObjectService, AccessObject, Action } from '../../services/accessObjectService';
+import { 
+  accessObjectService, 
+  TNestedTreeItem, 
+  EAccessObjectType, 
+  EActionType,
+  TActionGrant 
+} from '../../services/accessObjectService';
 import { useLocation } from 'react-router-dom';
 
 interface UserData {
@@ -33,7 +39,7 @@ export function Dashboard() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const [isRolesLoading, setIsRolesLoading] = useState(false);
-  const [accessObjects, setAccessObjects] = useState<AccessObject[]>([]);
+  const [accessObjects, setAccessObjects] = useState<TNestedTreeItem[]>([]);
   const [accessObjectsError, setAccessObjectsError] = useState<string | null>(null);
   const [isAccessObjectsLoading, setIsAccessObjectsLoading] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -42,6 +48,17 @@ export function Dashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'access-objects' && roles.length > 0) {
+      // Если есть роли, выбираем первую роль по умолчанию
+      const firstRole = roles[0].name;
+      setSelectedRole(firstRole);
+      fetchAccessObjects(firstRole);
+    }
+  };
 
   const handleLoginSuccess = (userData: UserData) => {
     setUserData(userData);
@@ -104,11 +121,11 @@ export function Dashboard() {
     }
   };
 
-  const fetchAccessObjects = async () => {
+  const fetchAccessObjects = async (roleName: string) => {
     try {
       setIsAccessObjectsLoading(true);
-      const response = await accessObjectService.getAccessObjectTree();
-      console.log('Access Objects Response:', response); // Отладочная информация
+      const response = await accessObjectService.getAccessObjectTree(roleName);
+      console.log('Access Objects Response:', response);
       if (response.payload) {
         setAccessObjects(response.payload);
       } else {
@@ -117,6 +134,7 @@ export function Dashboard() {
     } catch (error) {
       console.error('Ошибка при получении объектов доступа:', error);
       setAccessObjectsError('Ошибка при загрузке объектов доступа');
+      setAccessObjects([]);
     } finally {
       setIsAccessObjectsLoading(false);
     }
@@ -151,8 +169,8 @@ export function Dashboard() {
           });
           setIsLoggedIn(true);
           setActiveTab('profile');
-          // Загружаем устройства, роли и объекты доступа после успешной авторизации
-          await Promise.all([fetchDevices(), fetchRoles(), fetchAccessObjects()]);
+          // Загружаем только устройства и роли после успешной авторизации
+          await Promise.all([fetchDevices(), fetchRoles()]);
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -169,7 +187,7 @@ export function Dashboard() {
       setUserData(location.state.userData);
       setIsLoggedIn(true);
       setActiveTab('profile');
-      Promise.all([fetchDevices(), fetchRoles(), fetchAccessObjects()]);
+      Promise.all([fetchDevices(), fetchRoles()]);
     } else {
       checkAuth();
     }
@@ -223,45 +241,6 @@ export function Dashboard() {
     }
   };
 
-  const renderAccessObject = (object: AccessObject, level: number = 0) => {
-    const paddingLeft = `${level * 1.5}rem`;
-    
-    return (
-      <div key={object.name} style={{ paddingLeft }}>
-        <div className="flex items-center space-x-2 py-2">
-          <div className="flex items-center space-x-2">
-            {object.type === 'module' ? (
-              <Lock className="h-5 w-5 text-blue-500" />
-            ) : (
-              <Shield className="h-5 w-5 text-green-500" />
-            )}
-            <span className="font-medium">{object.name}</span>
-            <span className="text-sm text-gray-500">({object.type})</span>
-          </div>
-        </div>
-        
-        {object.actions.length > 0 && (
-          <div className="ml-8 space-y-1">
-            {object.actions.map((action) => (
-              <div key={action.name} className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">{action.name}</span>
-                <span className={`text-xs px-2 py-1 rounded ${
-                  action.type === 'read' ? 'bg-blue-100 text-blue-800' :
-                  action.type === 'write' ? 'bg-green-100 text-green-800' :
-                  'bg-purple-100 text-purple-800'
-                }`}>
-                  {action.type}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {object.children?.map((child) => renderAccessObject(child, level + 1))}
-      </div>
-    );
-  };
-
   const renderAccessObjectsTable = () => {
     console.log('Rendering table with objects:', accessObjects);
     
@@ -271,30 +250,35 @@ export function Dashboard() {
 
     const rows: Array<{
       id: string;
-      name: string;
-      type: string;
-      action: Action;
+      objectName: string;
+      objectType: EAccessObjectType;
+      action: TActionGrant;
       level: number;
     }> = [];
 
-    const processObject = (object: AccessObject, level: number = 0) => {
+    const processObject = (object: TNestedTreeItem, level: number = 0) => {
       if (object.actions && object.actions.length > 0) {
         object.actions.forEach(action => {
           rows.push({
-            id: `${object.name}-${action.name}-${level}`,
-            name: object.name,
-            type: object.type,
+            id: `${object.objectName}-${action.actionName}-${level}`,
+            objectName: object.objectName,
+            objectType: object.objectType,
             action,
             level
           });
         });
       } else {
-        // Если у объекта нет действий, добавляем одну строку с пустым действием
         rows.push({
-          id: `${object.name}-${level}`,
-          name: object.name,
-          type: object.type,
-          action: { name: '-', type: 'read' },
+          id: `${object.objectName}-${level}`,
+          objectName: object.objectName,
+          objectType: object.objectType,
+          action: { 
+            actionName: '-', 
+            actionType: EActionType.READ, 
+            actionDescription: '', 
+            ownGrant: false, 
+            parentGrant: false 
+          },
           level
         });
       }
@@ -320,6 +304,9 @@ export function Dashboard() {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Действие
               </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Доступ
+              </th>
               <th scope="col" className="relative px-6 py-3">
                 <span className="sr-only">Управление</span>
               </th>
@@ -331,37 +318,50 @@ export function Dashboard() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div style={{ marginLeft: `${row.level * 1.5}rem` }} className="flex items-center">
-                      {row.type === 'module' ? (
+                      {row.objectType === EAccessObjectType.APP ? (
                         <Lock className="h-5 w-5 text-blue-500 mr-2" />
-                      ) : (
+                      ) : row.objectType === EAccessObjectType.TAB ? (
                         <Shield className="h-5 w-5 text-green-500 mr-2" />
+                      ) : (
+                        <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
                       )}
-                      <span className="text-sm font-medium text-gray-900">{row.name}</span>
+                      <span className="text-sm font-medium text-gray-900">{row.objectName}</span>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    row.type === 'module' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                    row.objectType === EAccessObjectType.APP ? 'bg-blue-100 text-blue-800' : 
+                    row.objectType === EAccessObjectType.TAB ? 'bg-green-100 text-green-800' :
+                    'bg-purple-100 text-purple-800'
                   }`}>
-                    {row.type}
+                    {row.objectType}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {row.action.name !== '-' ? (
+                  {row.action.actionName !== '-' ? (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      row.action.type === 'read' ? 'bg-blue-100 text-blue-800' :
-                      row.action.type === 'write' ? 'bg-green-100 text-green-800' :
+                      row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
+                      row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
                       'bg-purple-100 text-purple-800'
                     }`}>
-                      {row.action.name}
+                      {row.action.actionName}
                     </span>
                   ) : (
                     <span className="text-gray-500">-</span>
                   )}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {row.action.actionName !== '-' && (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      row.action.ownGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {row.action.ownGrant ? 'Есть доступ' : 'Нет доступа'}
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {row.action.name !== '-' && (
+                  {row.action.actionName !== '-' && (
                     <div className="relative">
                       <button
                         onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
@@ -433,7 +433,7 @@ export function Dashboard() {
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => setActiveTab('profile')}
+              onClick={() => handleTabChange('profile')}
               className={`${
                 activeTab === 'profile'
                   ? 'border-blue-500 text-blue-600'
@@ -444,7 +444,7 @@ export function Dashboard() {
               Профиль
             </button>
             <button
-              onClick={() => setActiveTab('devices')}
+              onClick={() => handleTabChange('devices')}
               className={`${
                 activeTab === 'devices'
                   ? 'border-blue-500 text-blue-600'
@@ -455,7 +455,7 @@ export function Dashboard() {
               Устройства
             </button>
             <button
-              onClick={() => setActiveTab('services')}
+              onClick={() => handleTabChange('services')}
               className={`${
                 activeTab === 'services'
                   ? 'border-blue-500 text-blue-600'
@@ -466,7 +466,7 @@ export function Dashboard() {
               Сервисы
             </button>
             <button
-              onClick={() => setActiveTab('roles')}
+              onClick={() => handleTabChange('roles')}
               className={`${
                 activeTab === 'roles'
                   ? 'border-blue-500 text-blue-600'
@@ -477,7 +477,7 @@ export function Dashboard() {
               Роли
             </button>
             <button
-              onClick={() => setActiveTab('access-objects')}
+              onClick={() => handleTabChange('access-objects')}
               className={`${
                 activeTab === 'access-objects'
                   ? 'border-blue-500 text-blue-600'
@@ -724,6 +724,23 @@ export function Dashboard() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">Объекты доступа</h3>
+                  <div className="mt-4 mb-4">
+                    <select
+                      value={selectedRole}
+                      onChange={(e) => {
+                        setSelectedRole(e.target.value);
+                        fetchAccessObjects(e.target.value);
+                      }}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="">Выберите роль</option>
+                      {roles.map((role) => (
+                        <option key={role.name} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   {isAccessObjectsLoading ? (
                     <div className="mt-4 text-center text-gray-500">Загрузка объектов доступа...</div>
                   ) : accessObjectsError ? (

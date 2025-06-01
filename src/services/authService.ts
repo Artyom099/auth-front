@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3010/api/v1';
+export const API_URL = 'http://localhost:3010/api/v1';
 
 // Функция для декодирования JWT токена
 const decodeJWT = (token: string) => {
