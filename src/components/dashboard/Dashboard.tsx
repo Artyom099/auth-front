@@ -334,19 +334,21 @@ export function Dashboard() {
                   <div className="flex items-center">
                     <div style={{ marginLeft: `${row.level * 1.5}rem` }} className="flex items-center">
                       {row.isObject ? (
-                        row.objectType === EAccessObjectType.APP ? (
-                          <Lock className="h-5 w-5 text-blue-500 mr-2" />
-                        ) : row.objectType === EAccessObjectType.TAB ? (
-                          <Shield className="h-5 w-5 text-green-500 mr-2" />
-                        ) : (
-                          <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
-                        )
+                        <>
+                          {row.objectType === EAccessObjectType.APP ? (
+                            <Lock className="h-5 w-5 text-blue-500 mr-2" />
+                          ) : row.objectType === EAccessObjectType.TAB ? (
+                            <Shield className="h-5 w-5 text-green-500 mr-2" />
+                          ) : (
+                            <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
+                          )}
+                          <span className="text-sm font-medium text-gray-900">
+                            {row.objectName}
+                          </span>
+                        </>
                       ) : (
                         <div className="w-5 mr-2" />
                       )}
-                      <span className={`text-sm ${row.isObject ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
-                        {row.isObject ? row.objectName : row.action.actionName}
-                      </span>
                     </div>
                   </div>
                 </td>
