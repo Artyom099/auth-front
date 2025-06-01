@@ -397,28 +397,28 @@ export function Dashboard() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Объект доступа
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Тип объекта
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Действие
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Тип действия
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Описание
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Прямой доступ
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Родительский доступ
               </th>
-              <th scope="col" className="relative px-6 py-3">
+              <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 <span className="sr-only">Управление</span>
               </th>
             </tr>
@@ -426,29 +426,27 @@ export function Dashboard() {
           <tbody className="bg-white divide-y divide-gray-200">
             {rows.map((row) => (
               <tr key={row.id} className={`hover:bg-gray-50 ${!row.isObject ? 'bg-gray-50' : ''}`}>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div style={{ marginLeft: `${row.level * 1.5}rem` }} className="flex items-center">
+                    <div style={{ marginLeft: `${row.level * 1}rem` }} className="flex items-center">
                       {row.isObject ? (
-                        <>
-                          {row.objectType === EAccessObjectType.APP ? (
-                            <Lock className="h-5 w-5 text-blue-500 mr-2" />
-                          ) : row.objectType === EAccessObjectType.TAB ? (
-                            <Shield className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
-                          )}
-                          <span className="text-sm font-medium text-gray-900">
-                            {row.objectName}
-                          </span>
-                        </>
+                        row.objectType === EAccessObjectType.APP ? (
+                          <Lock className="h-4 w-4 text-blue-500 mr-1" />
+                        ) : row.objectType === EAccessObjectType.TAB ? (
+                          <Shield className="h-4 w-4 text-green-500 mr-1" />
+                        ) : (
+                          <MoreVertical className="h-4 w-4 text-purple-500 mr-1" />
+                        )
                       ) : (
-                        <div className="w-5 mr-2" />
+                        <div className="w-4 mr-1" />
                       )}
+                      <span className={`text-xs ${row.isObject ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+                        {row.objectName}
+                      </span>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {row.isObject && (
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       row.objectType === EAccessObjectType.APP ? 'bg-blue-100 text-blue-800' : 
@@ -459,9 +457,9 @@ export function Dashboard() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {!row.isObject && (
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
                       row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
                       'bg-purple-100 text-purple-800'
@@ -470,9 +468,9 @@ export function Dashboard() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {!row.isObject && (
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
                       row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
                       'bg-purple-100 text-purple-800'
@@ -481,28 +479,28 @@ export function Dashboard() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-500">
                   {!row.isObject && row.action.actionDescription}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {!row.isObject && (
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       row.action.ownGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
                       {row.action.ownGrant ? 'Есть' : 'Нет'}
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {!row.isObject && (
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       row.action.parentGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
                       {row.action.parentGrant ? 'Есть' : 'Нет'}
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-right text-xs font-medium">
                   {!row.isObject && (
                     <div className="relative">
                       <button
@@ -510,15 +508,15 @@ export function Dashboard() {
                         className="text-gray-400 hover:text-gray-500 focus:outline-none"
                         disabled={isUpdatingRights}
                       >
-                        <MoreVertical className="h-5 w-5" />
+                        <MoreVertical className="h-4 w-4" />
                       </button>
                       {openMenuId === row.id && (
-                        <div className="absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                        <div className="absolute right-0 z-50 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                           <div className="py-1 flex flex-col" role="menu" aria-orientation="vertical">
                             <button
                               onClick={() => handleGrantAccess(row.action.actionName)}
                               disabled={isUpdatingRights}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 border-b border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               role="menuitem"
                             >
                               Выдать доступ
@@ -526,7 +524,7 @@ export function Dashboard() {
                             <button
                               onClick={() => handleRevokeAccess(row.action.actionName)}
                               disabled={isUpdatingRights}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               role="menuitem"
                             >
                               Отозвать доступ
