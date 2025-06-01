@@ -57,12 +57,17 @@ export const authService = {
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
+      
+      // Устанавливаем refreshToken в куки
+      document.cookie = `refreshToken=${refreshToken}; path=/; secure; samesite=strict`;
 
       return response.data;
     } catch (error) {
       // В случае ошибки очищаем токены
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      // Очищаем куки
+      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Ошибка при авторизации');
@@ -126,12 +131,17 @@ export const authService = {
   async logout() {
     try {
       const token = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('refreshToken='))
+        ?.split('=')[1];
+
+      console.log({refreshToken});
       
       if (!token || !refreshToken) {
         throw new Error('Токены не найдены');
       }
-
+      
       await api.post('/auth/logout', {}, {
         headers: {
           Authorization: `Bearer ${token}`,
