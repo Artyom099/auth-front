@@ -3,11 +3,10 @@ import { X } from 'lucide-react';
 import { authService } from '../../services/authService';
 
 interface PasswordRecoveryModalProps {
-  email: string;
   onClose: () => void;
 }
 
-export function PasswordRecoveryModal({ email, onClose }: PasswordRecoveryModalProps) {
+export function PasswordRecoveryModal({ onClose }: PasswordRecoveryModalProps) {
   const [step, setStep] = useState<'code' | 'password'>('code');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');

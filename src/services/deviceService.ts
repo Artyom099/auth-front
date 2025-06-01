@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Device } from '../types';
 
 const API_URL = 'http://localhost:3010/api/v1';
 

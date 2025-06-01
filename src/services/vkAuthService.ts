@@ -17,26 +17,6 @@ const generateRandomString = (length: number) => {
   return result;
 };
 
-// Генерация code_verifier и code_challenge для PKCE
-const generateCodeVerifier = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let result = '';
-  for (let i = 0; i < 128; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
-
-const generateCodeChallenge = async (verifier: string) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await window.crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-};
-
 export const vkAuthService = {
   async getAuthUrl() {
     const state = generateRandomString(32);

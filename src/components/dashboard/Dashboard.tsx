@@ -30,7 +30,6 @@ export function Dashboard() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesError, setRolesError] = useState<string | null>(null);
   const [isRolesLoading, setIsRolesLoading] = useState(false);

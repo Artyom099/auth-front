@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserPlus, Mail, LogIn, User, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, LogIn, User, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { vkAuthService } from '../../services/vkAuthService';
 import { yandexAuthService } from '../../services/yandexAuthService';
