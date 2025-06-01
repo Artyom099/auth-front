@@ -254,9 +254,27 @@ export function Dashboard() {
       objectType: EAccessObjectType;
       action: TActionGrant;
       level: number;
+      isObject: boolean;
     }> = [];
 
     const processObject = (object: TNestedTreeItem, level: number = 0) => {
+      // Сначала добавляем сам объект
+      rows.push({
+        id: `${object.objectName}-${level}`,
+        objectName: object.objectName,
+        objectType: object.objectType,
+        action: { 
+          actionName: '-', 
+          actionType: EActionType.READ, 
+          actionDescription: '', 
+          ownGrant: false, 
+          parentGrant: false 
+        },
+        level,
+        isObject: true
+      });
+
+      // Затем добавляем его действия с увеличенным отступом
       if (object.actions && object.actions.length > 0) {
         object.actions.forEach(action => {
           rows.push({
@@ -264,25 +282,13 @@ export function Dashboard() {
             objectName: object.objectName,
             objectType: object.objectType,
             action,
-            level
+            level: level + 1,
+            isObject: false
           });
-        });
-      } else {
-        rows.push({
-          id: `${object.objectName}-${level}`,
-          objectName: object.objectName,
-          objectType: object.objectType,
-          action: { 
-            actionName: '-', 
-            actionType: EActionType.READ, 
-            actionDescription: '', 
-            ownGrant: false, 
-            parentGrant: false 
-          },
-          level
         });
       }
 
+      // Рекурсивно обрабатываем дочерние объекты
       if (object.children && object.children.length > 0) {
         object.children.forEach(child => processObject(child, level + 1));
       }
@@ -323,32 +329,40 @@ export function Dashboard() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
+              <tr key={row.id} className={`hover:bg-gray-50 ${!row.isObject ? 'bg-gray-50' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div style={{ marginLeft: `${row.level * 1.5}rem` }} className="flex items-center">
-                      {row.objectType === EAccessObjectType.APP ? (
-                        <Lock className="h-5 w-5 text-blue-500 mr-2" />
-                      ) : row.objectType === EAccessObjectType.TAB ? (
-                        <Shield className="h-5 w-5 text-green-500 mr-2" />
+                      {row.isObject ? (
+                        row.objectType === EAccessObjectType.APP ? (
+                          <Lock className="h-5 w-5 text-blue-500 mr-2" />
+                        ) : row.objectType === EAccessObjectType.TAB ? (
+                          <Shield className="h-5 w-5 text-green-500 mr-2" />
+                        ) : (
+                          <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
+                        )
                       ) : (
-                        <MoreVertical className="h-5 w-5 text-purple-500 mr-2" />
+                        <div className="w-5 mr-2" />
                       )}
-                      <span className="text-sm font-medium text-gray-900">{row.objectName}</span>
+                      <span className={`text-sm ${row.isObject ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+                        {row.isObject ? row.objectName : row.action.actionName}
+                      </span>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    row.objectType === EAccessObjectType.APP ? 'bg-blue-100 text-blue-800' : 
-                    row.objectType === EAccessObjectType.TAB ? 'bg-green-100 text-green-800' :
-                    'bg-purple-100 text-purple-800'
-                  }`}>
-                    {row.objectType}
-                  </span>
+                  {row.isObject && (
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      row.objectType === EAccessObjectType.APP ? 'bg-blue-100 text-blue-800' : 
+                      row.objectType === EAccessObjectType.TAB ? 'bg-green-100 text-green-800' :
+                      'bg-purple-100 text-purple-800'
+                    }`}>
+                      {row.objectType}
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {row.action.actionName !== '-' ? (
+                  {!row.isObject && (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
                       row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
@@ -356,12 +370,10 @@ export function Dashboard() {
                     }`}>
                       {row.action.actionName}
                     </span>
-                  ) : (
-                    <span className="text-gray-500">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {row.action.actionName !== '-' ? (
+                  {!row.isObject && (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       row.action.actionType === EActionType.READ ? 'bg-blue-100 text-blue-800' :
                       row.action.actionType === EActionType.WRITE ? 'bg-green-100 text-green-800' :
@@ -369,15 +381,13 @@ export function Dashboard() {
                     }`}>
                       {row.action.actionType}
                     </span>
-                  ) : (
-                    <span className="text-gray-500">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {row.action.actionName !== '-' ? row.action.actionDescription : '-'}
+                  {!row.isObject && row.action.actionDescription}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {row.action.actionName !== '-' && (
+                  {!row.isObject && (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       row.action.ownGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
@@ -386,7 +396,7 @@ export function Dashboard() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {row.action.actionName !== '-' && (
+                  {!row.isObject && (
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       row.action.parentGrant ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
@@ -395,7 +405,7 @@ export function Dashboard() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {row.action.actionName !== '-' && (
+                  {!row.isObject && (
                     <div className="relative">
                       <button
                         onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
