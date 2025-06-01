@@ -46,7 +46,10 @@ export const deviceService = {
 
   async deleteAllDevicesExceptCurrent() {
     const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('refreshToken='))
+      ?.split('=')[1];
     
     if (!accessToken || !refreshToken) {
       throw new Error('Токены не найдены');
@@ -56,9 +59,10 @@ export const deviceService = {
       // Удаляем все устройства, кроме текущего
       await api.delete('/device', {
         headers: {
-          Authorization: `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
+          cookie: `refreshToken=${refreshToken}`
         },
-        withCredentials: true // Для отправки refreshToken в cookies
+        withCredentials: true
       });
 
       // Получаем обновленный список устройств

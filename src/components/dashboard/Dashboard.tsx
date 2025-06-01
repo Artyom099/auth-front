@@ -767,7 +767,27 @@ export function Dashboard() {
             <div className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">Устройства</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Устройства</h3>
+                    <button
+                      onClick={async () => {
+                        try {
+                          setIsLoading(true);
+                          await deviceService.deleteAllDevicesExceptCurrent();
+                          await fetchDevices();
+                        } catch (error) {
+                          console.error('Ошибка при завершении других сеансов:', error);
+                          setError('Ошибка при завершении других сеансов');
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      Завершить другие сеансы
+                    </button>
+                  </div>
                   {isLoading ? (
                     <div className="mt-4 text-center text-gray-500">Загрузка устройств...</div>
                   ) : error ? (
