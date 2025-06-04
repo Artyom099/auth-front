@@ -24,6 +24,11 @@ export interface Role {
   description: string;
 }
 
+export interface RoleTreeNode {
+  name: string;
+  parentName: string;
+}
+
 export const roleService = {
   async getRoles() {
     try {
@@ -96,6 +101,20 @@ export const roleService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Ошибка при удалении роли');
+      }
+      throw error;
+    }
+  },
+
+  async getRoleTree(roleName: string) {
+    try {
+      const response = await api.post(`/admin/roles/get_tree`, {
+        name: roleName
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Ошибка при получении дерева ролей');
       }
       throw error;
     }

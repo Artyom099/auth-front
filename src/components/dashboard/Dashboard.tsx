@@ -4,7 +4,7 @@ import { AuthForm } from '../auth/AuthForm';
 import { mockUserData } from '../../data/mockData';
 import { authService } from '../../services/authService';
 import { deviceService } from '../../services/deviceService';
-import { roleService, Role } from '../../services/roleService';
+import { roleService, Role, RoleTreeNode } from '../../services/roleService';
 import { 
   accessObjectService, 
   TNestedTreeItem, 
@@ -50,6 +50,10 @@ export function Dashboard() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [isUpdatingRights, setIsUpdatingRights] = useState(false);
+  const [roleTree, setRoleTree] = useState<RoleTreeNode[]>([]);
+  const [selectedRoleForTree, setSelectedRoleForTree] = useState<string>('');
+  const [isRoleTreeLoading, setIsRoleTreeLoading] = useState(false);
+  const [roleTreeError, setRoleTreeError] = useState<string | null>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -141,6 +145,21 @@ export function Dashboard() {
     }
   };
 
+  const fetchRoleTree = async (roleName: string) => {
+    try {
+      setIsRoleTreeLoading(true);
+      setRoleTreeError(null);
+      const response = await roleService.getRoleTree(roleName);
+      setRoleTree(response.payload || []);
+    } catch (error) {
+      console.error('Ошибка при получении дерева ролей:', error);
+      setRoleTreeError('Ошибка при загрузке дерева ролей');
+      setRoleTree([]);
+    } finally {
+      setIsRoleTreeLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('ru-RU', {
@@ -205,7 +224,7 @@ export function Dashboard() {
       console.error('Ошибка при выходе:', error);
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      setIsLoggedIn(false);
+    setIsLoggedIn(false);
       setUserData(null);
     }
   };
@@ -543,6 +562,63 @@ export function Dashboard() {
     );
   };
 
+  const renderRoleTree = () => {
+    if (isRoleTreeLoading) {
+      return <div className="mt-4 text-center text-gray-500">Загрузка дерева ролей...</div>;
+    }
+
+    if (roleTreeError) {
+      return <div className="mt-4 text-center text-red-500">{roleTreeError}</div>;
+    }
+
+    if (roleTree.length === 0) {
+      return <div className="mt-4 text-center text-gray-500">Дерево ролей не найдено</div>;
+    }
+
+    // Создаем карту для быстрого доступа к узлам по имени
+    const nodeMap = new Map(roleTree.map(node => [node.name, node]));
+    // Находим корневые узлы (те, у которых нет родителя или родитель не в списке)
+    const rootNodes = roleTree.filter(node => !node.parentName || !nodeMap.has(node.parentName));
+
+    const renderNode = (node: RoleTreeNode, level: number = 0) => {
+      const children = roleTree.filter(n => n.parentName === node.name);
+      return (
+        <div key={node.name} className="relative">
+          <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded mb-2" style={{ marginLeft: level > 0 ? '1.5rem' : 0 }}>
+            <div className="flex items-center">
+              <Shield className="h-4 w-4 text-gray-400" />
+              <div className="ml-2">
+                <div className="text-sm font-medium text-gray-900">{node.name}</div>
+                {node.parentName && (
+                  <div className="text-xs text-gray-500">
+                    Родительская роль: {node.parentName}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          {children.length > 0 && (
+            <div>
+              {children.map((child) => (
+                <div key={child.name} className="relative flex items-start">
+                  {/* Только горизонтальная линия для потомков */}
+                  <div style={{ width: '1.5rem', height: 0, borderTop: '1px solid #D1D5DB', marginTop: '1.25rem', marginRight: '-0.75rem', marginLeft: level >= 0 ? '1.5rem' : 0, visibility: level >= 0 ? 'visible' : 'hidden' }} />
+                  {renderNode(child, level + 1)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div className="mt-4 space-y-2">
+        {rootNodes.map(node => renderNode(node))}
+      </div>
+    );
+  };
+
   if (!isLoggedIn) {
     return <AuthForm onLoginSuccess={handleLoginSuccess} />;
   }
@@ -853,32 +929,52 @@ export function Dashboard() {
             <div className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">Роли</h3>
-                  {isRolesLoading ? (
-                    <div className="mt-4 text-center text-gray-500">Загрузка ролей...</div>
-                  ) : rolesError ? (
-                    <div className="mt-4 text-center text-red-500">{rolesError}</div>
-                  ) : roles.length === 0 ? (
-                    <div className="mt-4 text-center text-gray-500">Роли не найдены</div>
-                  ) : (
-                    <div className="mt-4 space-y-4">
-                      {roles.map((role, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-4">
-                            <Shield className="h-6 w-6 text-gray-400" />
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {role.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {role.description}
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Роли</h3>
+                  <div className="flex gap-6">
+                    {/* Список ролей слева */}
+                    <div className="w-1/2">
+                      {isRolesLoading ? (
+                        <div className="text-center text-gray-500">Загрузка ролей...</div>
+                      ) : rolesError ? (
+                        <div className="text-center text-red-500">{rolesError}</div>
+                      ) : roles.length === 0 ? (
+                        <div className="text-center text-gray-500">Роли не найдены</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {roles.map((role, index) => (
+                            <div
+                              key={index}
+                              onClick={() => {
+                                setSelectedRoleForTree(role.name);
+                                fetchRoleTree(role.name);
+                              }}
+                              className={`flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors ${
+                                selectedRoleForTree === role.name ? 'ring-2 ring-blue-500' : ''
+                              }`}
+                            >
+                              <Shield className="h-5 w-5 text-gray-400 mr-3" />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {role.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {role.description}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
+
+                    {/* Дерево ролей справа */}
+                    <div className="w-1/2">
+                      <h4 className="text-md font-medium text-gray-900 mb-4">
+                        {selectedRoleForTree ? `Дерево ролей для "${selectedRoleForTree}"` : 'Выберите роль для просмотра дерева'}
+                      </h4>
+                      {renderRoleTree()}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
