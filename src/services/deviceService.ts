@@ -34,7 +34,7 @@ export const deviceService = {
 
   async deleteDevice(deviceId: string) {
     try {
-      const response = await api.delete(`/device/${deviceId}`);
+      const response = await api.delete('/device/delete', { data: { id: deviceId } });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -57,7 +57,7 @@ export const deviceService = {
 
     try {
       // Удаляем все устройства, кроме текущего
-      await api.delete('/device', {
+      await api.delete('/device/delete_other', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           cookie: `refreshToken=${refreshToken}`
