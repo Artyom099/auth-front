@@ -54,6 +54,8 @@ export function Dashboard() {
   const [selectedRoleForTree, setSelectedRoleForTree] = useState<string>('');
   const [isRoleTreeLoading, setIsRoleTreeLoading] = useState(false);
   const [roleTreeError, setRoleTreeError] = useState<string | null>(null);
+  const [forbiddenDevicesMessage, setForbiddenDevicesMessage] = useState<string | null>(null);
+  const [deviceToast, setDeviceToast] = useState<{ message: string, visible: boolean }>({ message: '', visible: false });
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -86,15 +88,26 @@ export function Dashboard() {
     }
   };
 
+  const showDeviceToast = (message: string) => {
+    setDeviceToast({ message, visible: true });
+    setTimeout(() => setDeviceToast({ message: '', visible: false }), 2000);
+  };
+
   const handleDeleteDevice = async (deviceId: string) => {
     try {
       setIsLoading(true);
       await deviceService.deleteDevice(deviceId);
-      // Обновляем список устройств после удаления
       await fetchDevices();
-    } catch (error) {
-      console.error('Ошибка при удалении устройства:', error);
-      setError('Ошибка при удалении устройства');
+    } catch (error: any) {
+      let forbiddenMsg = null;
+      if (error?.response?.status === 403) {
+        forbiddenMsg = error.response.data?.message || 'Доступ запрещен';
+      }
+      if (forbiddenMsg) {
+        showDeviceToast(forbiddenMsg);
+        return;
+      }
+      showDeviceToast('Ошибка при удалении устройства');
     } finally {
       setIsLoading(false);
     }
@@ -105,8 +118,11 @@ export function Dashboard() {
       setIsRolesLoading(true);
       const response = await roleService.getRoles();
       setRoles(response.payload || []);
-    } catch (error) {
-      console.error('Ошибка при получении ролей:', error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        return;
+      }
       setRolesError('Ошибка при загрузке ролей');
     } finally {
       setIsRolesLoading(false);
@@ -130,14 +146,16 @@ export function Dashboard() {
     try {
       setIsAccessObjectsLoading(true);
       const response = await accessObjectService.getAccessObjectTree(roleName);
-      console.log('Access Objects Response:', response);
       if (response.payload) {
         setAccessObjects(response.payload);
       } else {
         setAccessObjects([]);
       }
-    } catch (error) {
-      console.error('Ошибка при получении объектов доступа:', error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        return;
+      }
       setAccessObjectsError('Ошибка при загрузке объектов доступа');
       setAccessObjects([]);
     } finally {
@@ -151,8 +169,11 @@ export function Dashboard() {
       setRoleTreeError(null);
       const response = await roleService.getRoleTree(roleName);
       setRoleTree(response.payload || []);
-    } catch (error) {
-      console.error('Ошибка при получении дерева ролей:', error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        return;
+      }
       setRoleTreeError('Ошибка при загрузке дерева ролей');
       setRoleTree([]);
     } finally {
@@ -302,7 +323,11 @@ export function Dashboard() {
 
       await accessObjectService.reassignRights(selectedRole, actionNames);
       await fetchAccessObjects(selectedRole);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        return;
+      }
       console.error('Ошибка при выдаче доступа:', error);
     } finally {
       setIsUpdatingRights(false);
@@ -348,7 +373,11 @@ export function Dashboard() {
 
       await accessObjectService.reassignRights(selectedRole, actionNames);
       await fetchAccessObjects(selectedRole);
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        return;
+      }
       console.error('Ошибка при отзыве доступа:', error);
     } finally {
       setIsUpdatingRights(false);
@@ -648,6 +677,13 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* Toast для ошибок удаления устройства */}
+      {deviceToast.visible && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-6 py-3 rounded-lg shadow-lg z-50">
+          {deviceToast.message}
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
