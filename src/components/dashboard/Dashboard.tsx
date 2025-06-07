@@ -54,8 +54,10 @@ export function Dashboard() {
   const [selectedRoleForTree, setSelectedRoleForTree] = useState<string>('');
   const [isRoleTreeLoading, setIsRoleTreeLoading] = useState(false);
   const [roleTreeError, setRoleTreeError] = useState<string | null>(null);
-  const [forbiddenDevicesMessage, setForbiddenDevicesMessage] = useState<string | null>(null);
   const [deviceToast, setDeviceToast] = useState<{ message: string, visible: boolean }>({ message: '', visible: false });
+  const [userRoles, setUserRoles] = useState<{ userId: string; roleName: string }[]>([]);
+  const [userRolesLoading, setUserRolesLoading] = useState(false);
+  const [userRolesError, setUserRolesError] = useState<string | null>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -71,8 +73,8 @@ export function Dashboard() {
     setUserData(userData);
     setIsLoggedIn(true);
     setActiveTab('profile');
-    // Загружаем устройства после успешного логина
     fetchDevices();
+    fetchUserRoles(userData.id);
   };
 
   const fetchDevices = async () => {
@@ -192,6 +194,20 @@ export function Dashboard() {
     });
   };
 
+  const fetchUserRoles = async (userId: string) => {
+    setUserRolesLoading(true);
+    setUserRolesError(null);
+    try {
+      const response = await authService.getUserRoles(userId);
+      setUserRoles(response.payload || []);
+    } catch (error: any) {
+      setUserRolesError(error.message || 'Ошибка при получении ролей пользователя');
+      setUserRoles([]);
+    } finally {
+      setUserRolesLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const accessToken = localStorage.getItem('accessToken');
@@ -199,7 +215,6 @@ export function Dashboard() {
         setIsLoggedIn(false);
         return;
       }
-
       try {
         const response = await authService.getMe();
         if (response.payload) {
@@ -210,8 +225,11 @@ export function Dashboard() {
           });
           setIsLoggedIn(true);
           setActiveTab('profile');
-          // Загружаем только устройства и роли после успешной авторизации
-          await Promise.all([fetchDevices(), fetchRoles()]);
+          await Promise.all([
+            fetchDevices(),
+            fetchRoles(),
+            fetchUserRoles(response.payload.id)
+          ]);
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -223,12 +241,15 @@ export function Dashboard() {
       }
     };
 
-    // Проверяем, есть ли данные пользователя в состоянии навигации
     if (location.state?.userData) {
       setUserData(location.state.userData);
       setIsLoggedIn(true);
       setActiveTab('profile');
-      Promise.all([fetchDevices(), fetchRoles()]);
+      Promise.all([
+        fetchDevices(),
+        fetchRoles(),
+        fetchUserRoles(location.state.userData.id)
+      ]);
     } else {
       checkAuth();
     }
@@ -766,6 +787,24 @@ export function Dashboard() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700">ID пользователя</label>
                       <div className="mt-1 text-sm text-gray-900">{userData.id || 'Не указан'}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Роли пользователя</label>
+                      <div className="mt-1 text-sm text-gray-900">
+                        {userRolesLoading ? (
+                          <span className="text-gray-500">Загрузка ролей...</span>
+                        ) : userRolesError ? (
+                          <span className="text-red-500">{userRolesError}</span>
+                        ) : userRoles.length === 0 ? (
+                          <span className="text-gray-500">Роли не найдены</span>
+                        ) : (
+                          <ul className="list-disc pl-5">
+                            {userRoles.map((role, idx) => (
+                              <li key={idx}>{role.roleName}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

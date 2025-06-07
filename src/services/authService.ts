@@ -213,4 +213,19 @@ export const authService = {
       throw error;
     }
   },
+
+  async getUserRoles(userId: string) {
+    try {
+      const response = await api.post('/admin/user/get_roles', { userId });
+      if (response.data.hasError) {
+        throw new Error(response.data.message || 'Ошибка при получении ролей пользователя');
+      }
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Ошибка при получении ролей пользователя');
+      }
+      throw error;
+    }
+  },
 }; 
