@@ -58,11 +58,12 @@ export function Dashboard() {
   const [userRoles, setUserRoles] = useState<{ userId: string; roleName: string }[]>([]);
   const [userRolesLoading, setUserRolesLoading] = useState(false);
   const [userRolesError, setUserRolesError] = useState<string | null>(null);
-  const [grantUserId, setGrantUserId] = useState('');
-  const [grantRoleName, setGrantRoleName] = useState('');
-  const [grantLoading, setGrantLoading] = useState(false);
-  const [grantError, setGrantError] = useState<string | null>(null);
-  const [grantSuccess, setGrantSuccess] = useState<string | null>(null);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [newRoleParent, setNewRoleParent] = useState('');
+  const [createRoleLoading, setCreateRoleLoading] = useState(false);
+  const [createRoleError, setCreateRoleError] = useState<string | null>(null);
+  const [createRoleSuccess, setCreateRoleSuccess] = useState<string | null>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -411,21 +412,25 @@ export function Dashboard() {
     }
   };
 
-  const handleGrantUserRole = async () => {
-    setGrantLoading(true);
-    setGrantError(null);
-    setGrantSuccess(null);
+  const handleCreateRole = async () => {
+    setCreateRoleLoading(true);
+    setCreateRoleError(null);
+    setCreateRoleSuccess(null);
     try {
-      await authService.createUserRole(grantUserId, grantRoleName);
-      setGrantSuccess('Роль успешно выдана пользователю');
-      setGrantUserId('');
-      setGrantRoleName('');
-      // Можно обновить userRoles, если нужно
+      await authService.createRole(newRoleName, newRoleDescription, newRoleParent || undefined);
+      setCreateRoleSuccess('Роль успешно создана');
+      setNewRoleName('');
+      setNewRoleDescription('');
+      setNewRoleParent('');
+      await fetchRoles();
+      if (selectedRoleForTree) {
+        await fetchRoleTree(selectedRoleForTree);
+      }
     } catch (error: any) {
-      setGrantError(error.message || 'Ошибка при выдаче роли');
+      setCreateRoleError(error.message || 'Ошибка при создании роли');
     } finally {
-      setGrantLoading(false);
-      setTimeout(() => setGrantSuccess(null), 3000);
+      setCreateRoleLoading(false);
+      setTimeout(() => setCreateRoleSuccess(null), 3000);
     }
   };
 
@@ -1077,38 +1082,49 @@ export function Dashboard() {
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                   <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Название роли</label>
                       <input
                         type="text"
-                        value={grantUserId}
-                        onChange={e => setGrantUserId(e.target.value)}
+                        value={newRoleName}
+                        onChange={e => setNewRoleName(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Введите userId"
+                        placeholder="Введите название роли"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Роль</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Описание роли<span className='text-red-500'>*</span></label>
+                      <input
+                        type="text"
+                        value={newRoleDescription}
+                        onChange={e => setNewRoleDescription(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Введите описание роли"
+                        required
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Родительская роль</label>
                       <select
-                        value={grantRoleName}
-                        onChange={e => setGrantRoleName(e.target.value)}
+                        value={newRoleParent}
+                        onChange={e => setNewRoleParent(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Выберите роль</option>
+                        <option value="">Без родителя</option>
                         {roles.map(role => (
                           <option key={role.name} value={role.name}>{role.name}</option>
                         ))}
                       </select>
                     </div>
                     <button
-                      onClick={handleGrantUserRole}
-                      disabled={grantLoading || !grantUserId || !grantRoleName}
+                      onClick={handleCreateRole}
+                      disabled={createRoleLoading || !newRoleName || !newRoleDescription}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                     >
-                      {grantLoading ? 'Выдача...' : 'Выдать пользователю роль'}
+                      {createRoleLoading ? 'Создание...' : 'Создать роль'}
                     </button>
                   </div>
-                  {grantError && <div className="mt-2 text-red-500 text-sm">{grantError}</div>}
-                  {grantSuccess && <div className="mt-2 text-green-600 text-sm">{grantSuccess}</div>}
+                  {createRoleError && <div className="mt-2 text-red-500 text-sm">{createRoleError}</div>}
+                  {createRoleSuccess && <div className="mt-2 text-green-600 text-sm">{createRoleSuccess}</div>}
                 </div>
               </div>
             </div>

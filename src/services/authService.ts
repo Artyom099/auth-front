@@ -229,16 +229,16 @@ export const authService = {
     }
   },
 
-  async createUserRole(userId: string, roleName: string) {
+  async createRole(name: string, description: string, parentName?: string) {
     try {
-      const response = await api.post('/admin/user_role/create', { userId, roleName });
+      const response = await api.post('/admin/role/create', { name, description, parentName });
       if (response.data.hasError) {
-        throw new Error(response.data.message || 'Ошибка при выдаче роли пользователю');
+        throw new Error(response.data.message || 'Ошибка при создании роли');
       }
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при выдаче роли пользователю');
+        throw new Error(error.response?.data?.message || 'Ошибка при создании роли');
       }
       throw error;
     }
