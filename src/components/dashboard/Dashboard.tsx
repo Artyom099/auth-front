@@ -64,14 +64,19 @@ export function Dashboard() {
   const [createRoleLoading, setCreateRoleLoading] = useState(false);
   const [createRoleError, setCreateRoleError] = useState<string | null>(null);
   const [createRoleSuccess, setCreateRoleSuccess] = useState<string | null>(null);
+  const [users, setUsers] = useState<{ id: string; login: string; email: string }[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     if (tab === 'access-objects' && roles.length > 0) {
-      // Если есть роли, выбираем первую роль по умолчанию
       const firstRole = roles[0].name;
       setSelectedRole(firstRole);
       fetchAccessObjects(firstRole);
+    }
+    if (tab === 'users') {
+      fetchUsers();
     }
   };
 
@@ -211,6 +216,20 @@ export function Dashboard() {
       setUserRoles([]);
     } finally {
       setUserRolesLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    setUsersError(null);
+    try {
+      const response = await authService.getUsers();
+      setUsers(response.payload || []);
+    } catch (error: any) {
+      setUsersError(error.message || 'Ошибка при загрузке пользователей');
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
     }
   };
 
@@ -793,6 +812,17 @@ export function Dashboard() {
               <Lock className="h-5 w-5 mr-2" />
               Объекты доступа
             </button>
+            <button
+              onClick={() => handleTabChange('users')}
+              className={`${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              <User className="h-5 w-5 mr-2" />
+              Пользователи
+            </button>
           </nav>
         </div>
 
@@ -1165,6 +1195,40 @@ export function Dashboard() {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'users' && (
+            <div className="p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Пользователи</h3>
+              {usersLoading ? (
+                <div className="text-center text-gray-500">Загрузка пользователей...</div>
+              ) : usersError ? (
+                <div className="text-center text-red-500">{usersError}</div>
+              ) : users.length === 0 ? (
+                <div className="text-center text-gray-500">Пользователи не найдены</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Логин</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {users.map(user => (
+                        <tr key={user.id}>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.login}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

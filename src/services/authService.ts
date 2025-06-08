@@ -243,4 +243,19 @@ export const authService = {
       throw error;
     }
   },
+
+  async getUsers() {
+    try {
+      const response = await api.get('/admin/user/get_list');
+      if (response.data.hasError) {
+        throw new Error(response.data.message || 'Ошибка при получении списка пользователей');
+      }
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Ошибка при получении списка пользователей');
+      }
+      throw error;
+    }
+  },
 }; 
