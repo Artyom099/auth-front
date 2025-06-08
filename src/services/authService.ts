@@ -258,4 +258,19 @@ export const authService = {
       throw error;
     }
   },
+
+  async assignRoleToUser(userId: string, roleName: string) {
+    try {
+      const response = await api.post('/admin/user_role/create', { userId, roleName });
+      if (response.data.hasError) {
+        throw new Error(response.data.message || 'Ошибка при выдаче роли пользователю');
+      }
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Ошибка при выдаче роли пользователю');
+      }
+      throw error;
+    }
+  },
 }; 

@@ -67,6 +67,14 @@ export function Dashboard() {
   const [users, setUsers] = useState<{ id: string; login: string; email: string }[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
+  const [assignRoleUserId, setAssignRoleUserId] = useState<string | null>(null);
+  const [assignRoleName, setAssignRoleName] = useState('');
+  const [assignRoleLoading, setAssignRoleLoading] = useState(false);
+  const [assignRoleError, setAssignRoleError] = useState<string | null>(null);
+  const [assignRoleSuccess, setAssignRoleSuccess] = useState<string | null>(null);
+  const [userRolesMap, setUserRolesMap] = useState<Record<string, { userId: string; roleName: string }[]>>({});
+  const [userRolesLoadingId, setUserRolesLoadingId] = useState<string | null>(null);
+  const [userRolesErrorId, setUserRolesErrorId] = useState<string | null>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -230,6 +238,20 @@ export function Dashboard() {
       setUsers([]);
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const fetchUserRolesForUser = async (userId: string) => {
+    setUserRolesLoadingId(userId);
+    setUserRolesErrorId(null);
+    try {
+      const response = await authService.getUserRoles(userId);
+      setUserRolesMap(prev => ({ ...prev, [userId]: response.payload || [] }));
+    } catch (error: any) {
+      setUserRolesErrorId(userId);
+      setUserRolesMap(prev => ({ ...prev, [userId]: [] }));
+    } finally {
+      setUserRolesLoadingId(null);
     }
   };
 
@@ -450,6 +472,24 @@ export function Dashboard() {
     } finally {
       setCreateRoleLoading(false);
       setTimeout(() => setCreateRoleSuccess(null), 3000);
+    }
+  };
+
+  const handleAssignRole = async () => {
+    if (!assignRoleUserId || !assignRoleName) return;
+    setAssignRoleLoading(true);
+    setAssignRoleError(null);
+    setAssignRoleSuccess(null);
+    try {
+      await authService.assignRoleToUser(assignRoleUserId, assignRoleName);
+      setAssignRoleSuccess('Роль успешно выдана пользователю');
+      setAssignRoleUserId(null);
+      setAssignRoleName('');
+    } catch (error: any) {
+      setAssignRoleError(error.message || 'Ошибка при выдаче роли');
+    } finally {
+      setAssignRoleLoading(false);
+      setTimeout(() => setAssignRoleSuccess(null), 3000);
     }
   };
 
@@ -1215,6 +1255,7 @@ export function Dashboard() {
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Логин</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -1223,10 +1264,84 @@ export function Dashboard() {
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.login}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm">
+                            <button
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                              onClick={() => {
+                                setAssignRoleUserId(user.id);
+                                setAssignRoleName('');
+                                fetchUserRolesForUser(user.id);
+                              }}
+                            >
+                              Выдать роль
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {/* Модальное окно для выдачи роли */}
+              {assignRoleUserId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                    <h4 className="text-lg font-medium mb-4">Выдать роль пользователю</h4>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Текущие роли пользователя:</label>
+                      {userRolesLoadingId === assignRoleUserId ? (
+                        <div className="text-gray-500 text-sm mb-2">Загрузка...</div>
+                      ) : userRolesErrorId === assignRoleUserId ? (
+                        <div className="text-red-500 text-sm mb-2">Ошибка при загрузке ролей</div>
+                      ) : (
+                        <ul className="list-disc pl-5 text-sm mb-2">
+                          {(userRolesMap[assignRoleUserId] || []).length === 0 ? (
+                            <li className="text-gray-500">Нет ролей</li>
+                          ) : (
+                            userRolesMap[assignRoleUserId].map((role, idx) => (
+                              <li key={idx}>{role.roleName}</li>
+                            ))
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Роль</label>
+                      <select
+                        value={assignRoleName}
+                        onChange={e => setAssignRoleName(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Выберите роль</option>
+                        {roles.map(role => (
+                          <option key={role.name} value={role.name}>{role.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {assignRoleError && <div className="text-red-500 text-sm mb-2">{assignRoleError}</div>}
+                    {assignRoleSuccess && <div className="text-green-600 text-sm mb-2">{assignRoleSuccess}</div>}
+                    <div className="flex justify-end gap-2">
+                      <button
+                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                        onClick={() => {
+                          setAssignRoleUserId(null);
+                          setAssignRoleName('');
+                          setAssignRoleError(null);
+                          setAssignRoleSuccess(null);
+                        }}
+                        disabled={assignRoleLoading}
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm disabled:opacity-50"
+                        onClick={handleAssignRole}
+                        disabled={!assignRoleName || assignRoleLoading}
+                      >
+                        {assignRoleLoading ? 'Выдача...' : 'Выдать'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
