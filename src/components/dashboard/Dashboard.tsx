@@ -668,7 +668,7 @@ export function Dashboard() {
                         <MoreVertical className="h-4 w-4" />
                       </button>
                       {openMenuId === row.id && (
-                        <div className="absolute right-0 z-50 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                        <div className="absolute right-0 z-50 mt-2 w-40 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-white ring-opacity-5 dark:ring-opacity-10">
                           <div className="py-1 flex flex-col" role="menu" aria-orientation="vertical">
                             <button
                               onClick={() => handleGrantAccess(row.action.actionName)}
@@ -871,7 +871,7 @@ export function Dashboard() {
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           {activeTab === 'profile' && userData && (
             <div className="p-6">
               <div className="space-y-6">
@@ -1289,7 +1289,7 @@ export function Dashboard() {
               {/* Модальное окно для выдачи роли */}
               {assignRoleUserId && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm">
                     <h4 className="text-lg font-medium mb-4">Выдать роль пользователю</h4>
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Текущие роли пользователя:</label>
