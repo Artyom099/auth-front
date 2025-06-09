@@ -768,20 +768,20 @@ export function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-600 dark:text-gray-200 font-medium">
+              <span className="text-gray-600 dark:text-white font-medium">
                 {userData?.login?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{userData?.login || 'Пользователь'}</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{userData?.email || ''}</p>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{userData?.login || 'Пользователь'}</h1>
+              <p className="text-sm text-gray-500 dark:text-white">{userData?.email || ''}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <button
               onClick={handleLogout}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-white dark:hover:text-white"
             >
               <LogOut className="h-5 w-5 mr-2" />
               Выйти
