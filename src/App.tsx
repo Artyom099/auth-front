@@ -3,6 +3,7 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { VKCallback } from './components/auth/VKCallback';
 import { YandexCallback } from './components/auth/YandexCallback';
 import { AuthForm } from './components/auth/AuthForm';
+import { ThemeProvider } from './theme';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -20,9 +21,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <AppRoutes />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -13,6 +13,7 @@ import {
   TActionGrant 
 } from '../../services/accessObjectService';
 import { useLocation } from 'react-router-dom';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface UserData {
   id: string;
@@ -550,8 +551,8 @@ export function Dashboard() {
 
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Объект доступа
@@ -579,9 +580,9 @@ export function Dashboard() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {rows.map((row) => (
-              <tr key={row.id} className={`hover:bg-gray-50 ${!row.isObject ? 'bg-gray-50' : ''}`}>
+              <tr key={row.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${!row.isObject ? 'bg-gray-50 dark:bg-gray-700' : ''}`}>
                 <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div style={{ marginLeft: `${row.level * 1}rem` }} className="flex items-center">
@@ -721,7 +722,7 @@ export function Dashboard() {
       const children = roleTree.filter(n => n.parentName === node.name);
       return (
         <div key={node.name} className="relative">
-          <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded mb-2" style={{ marginLeft: level > 0 ? '1.5rem' : 0 }}>
+          <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded mb-2" style={{ marginLeft: level > 0 ? '1.5rem' : 0 }}>
             <div className="flex items-center">
               <Shield className="h-4 w-4 text-gray-400" />
               <div className="ml-2">
@@ -761,28 +762,31 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-600 font-medium">
+            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <span className="text-gray-600 dark:text-gray-200 font-medium">
                 {userData?.login?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{userData?.login || 'Пользователь'}</h1>
-              <p className="text-sm text-gray-500">{userData?.email || ''}</p>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{userData?.login || 'Пользователь'}</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{userData?.email || ''}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-          >
-            <LogOut className="h-5 w-5 mr-2" />
-            Выйти
-          </button>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1046,7 +1050,7 @@ export function Dashboard() {
                   ) : (
                     <div className="mt-4 space-y-4">
                       {devices.map((device) => (
-                        <div key={device.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div key={device.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex items-center space-x-4">
                             <Smartphone className="h-6 w-6 text-gray-400" />
                             <div>
@@ -1078,9 +1082,9 @@ export function Dashboard() {
           )}
 
           {activeTab === 'services' && (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {mockUserData.services.map((service) => (
-                <div key={service.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
+                <div key={service.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
                   <div className="flex items-center">
                     <service.icon className="h-10 w-10 text-gray-400" />
                     <div className="ml-4">
@@ -1121,7 +1125,7 @@ export function Dashboard() {
                                 setSelectedRoleForTree(role.name);
                                 fetchRoleTree(role.name);
                               }}
-                              className={`flex items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors ${
+                              className={`flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
                                 selectedRoleForTree === role.name ? 'ring-2 ring-blue-500' : ''
                               }`}
                             >
@@ -1149,7 +1153,7 @@ export function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Название роли</label>
@@ -1249,8 +1253,8 @@ export function Dashboard() {
                 <div className="text-center text-gray-500">Пользователи не найдены</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Логин</th>
@@ -1258,7 +1262,7 @@ export function Dashboard() {
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {users.map(user => (
                         <tr key={user.id}>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
