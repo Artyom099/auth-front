@@ -597,7 +597,7 @@ export function Dashboard() {
                       ) : (
                         <div className="w-4 mr-1" />
                       )}
-                      <span className={`text-xs ${row.isObject ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+                      <span className={`text-xs ${row.isObject ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-600 dark:text-white'}`}>
                         {row.objectName}
                       </span>
                     </div>
@@ -726,7 +726,7 @@ export function Dashboard() {
             <div className="flex items-center">
               <Shield className="h-4 w-4 text-gray-400" />
               <div className="ml-2">
-                <div className="text-sm font-medium text-gray-900">{node.name}</div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{node.name}</div>
                 {node.parentName && (
                   <div className="text-xs text-gray-500">
                     Родительская роль: {node.parentName}
@@ -876,23 +876,23 @@ export function Dashboard() {
             <div className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">Информация о пользователе</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Информация о пользователе</h3>
                   <div className="mt-4 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Логин</label>
-                      <div className="mt-1 text-sm text-gray-900">{userData.login || 'Не указан'}</div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white">Логин</label>
+                      <div className="mt-1 text-sm text-gray-900 dark:text-white">{userData.login || 'Не указан'}</div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <div className="mt-1 text-sm text-gray-900">{userData.email || 'Не указан'}</div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white">Email</label>
+                      <div className="mt-1 text-sm text-gray-900 dark:text-white">{userData.email || 'Не указан'}</div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">ID пользователя</label>
-                      <div className="mt-1 text-sm text-gray-900">{userData.id || 'Не указан'}</div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white">ID пользователя</label>
+                      <div className="mt-1 text-sm text-gray-900 dark:text-white">{userData.id || 'Не указан'}</div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Роли пользователя</label>
-                      <div className="mt-1 text-sm text-gray-900">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white">Роли пользователя</label>
+                      <div className="mt-1 text-sm text-gray-900 dark:text-white">
                         {userRolesLoading ? (
                           <span className="text-gray-500">Загрузка ролей...</span>
                         ) : userRolesError ? (
@@ -922,7 +922,7 @@ export function Dashboard() {
                   {recoveryStep === 'code' && (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                           Код подтверждения
                         </label>
                         <input
@@ -957,7 +957,7 @@ export function Dashboard() {
                   {recoveryStep === 'password' && (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                           Новый пароль
                         </label>
                         <div className="relative">
@@ -1021,7 +1021,7 @@ export function Dashboard() {
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">Устройства</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Устройства</h3>
                     <button
                       onClick={async () => {
                         try {
@@ -1054,7 +1054,7 @@ export function Dashboard() {
                           <div className="flex items-center space-x-4">
                             <Smartphone className="h-6 w-6 text-gray-400" />
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {device.deviceName}
                               </div>
                               <div className="text-sm text-gray-500">
@@ -1088,7 +1088,7 @@ export function Dashboard() {
                   <div className="flex items-center">
                     <service.icon className="h-10 w-10 text-gray-400" />
                     <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">{service.name}</h3>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{service.name}</h3>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         service.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
@@ -1106,7 +1106,7 @@ export function Dashboard() {
             <div className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Роли</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Роли</h3>
                   <div className="flex gap-6">
                     {/* Список ролей слева */}
                     <div className="w-1/2">
@@ -1131,7 +1131,7 @@ export function Dashboard() {
                             >
                               <Shield className="h-5 w-5 text-gray-400 mr-3" />
                               <div>
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
                                   {role.name}
                                 </div>
                                 <div className="text-sm text-gray-500">
@@ -1146,7 +1146,7 @@ export function Dashboard() {
 
                     {/* Дерево ролей справа */}
                     <div className="w-1/2">
-                      <h4 className="text-md font-medium text-gray-900 mb-4">
+                      <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
                         {selectedRoleForTree ? `Дерево ролей для "${selectedRoleForTree}"` : 'Выберите роль для просмотра дерева'}
                       </h4>
                       {renderRoleTree()}
@@ -1156,7 +1156,7 @@ export function Dashboard() {
                 <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Название роли</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Название роли</label>
                       <input
                         type="text"
                         value={newRoleName}
@@ -1166,7 +1166,7 @@ export function Dashboard() {
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Описание роли<span className='text-red-500'>*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Описание роли<span className='text-red-500'>*</span></label>
                       <input
                         type="text"
                         value={newRoleDescription}
@@ -1177,7 +1177,7 @@ export function Dashboard() {
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Родительская роль</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Родительская роль</label>
                       <select
                         value={newRoleParent}
                         onChange={e => setNewRoleParent(e.target.value)}
@@ -1208,7 +1208,7 @@ export function Dashboard() {
             <div className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">Объекты доступа</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Объекты доступа</h3>
                   <div className="mt-4 mb-4">
                     <select
                       value={selectedRole}
@@ -1244,7 +1244,7 @@ export function Dashboard() {
 
           {activeTab === 'users' && (
             <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Пользователи</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Пользователи</h3>
               {usersLoading ? (
                 <div className="text-center text-gray-500">Загрузка пользователей...</div>
               ) : usersError ? (
@@ -1265,9 +1265,9 @@ export function Dashboard() {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {users.map(user => (
                         <tr key={user.id}>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.login}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.id}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.login}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{user.email}</td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm">
                             <button
                               className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
@@ -1290,9 +1290,9 @@ export function Dashboard() {
               {assignRoleUserId && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm">
-                    <h4 className="text-lg font-medium mb-4">Выдать роль пользователю</h4>
+                    <h4 className="text-lg font-medium dark:text-white mb-4">Выдать роль пользователю</h4>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Текущие роли пользователя:</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Текущие роли пользователя:</label>
                       {userRolesLoadingId === assignRoleUserId ? (
                         <div className="text-gray-500 text-sm mb-2">Загрузка...</div>
                       ) : userRolesErrorId === assignRoleUserId ? (
@@ -1310,7 +1310,7 @@ export function Dashboard() {
                       )}
                     </div>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Роль</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Роль</label>
                       <select
                         value={assignRoleName}
                         onChange={e => setAssignRoleName(e.target.value)}
