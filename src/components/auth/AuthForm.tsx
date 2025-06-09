@@ -4,6 +4,7 @@ import { authService } from '../../services/authService';
 import { vkAuthService } from '../../services/vkAuthService';
 import { yandexAuthService } from '../../services/yandexAuthService';
 import { RegistrationConfirmation } from './RegistrationConfirmation';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface AuthFormProps {
   onLoginSuccess: (userData: any) => void;
@@ -137,7 +138,10 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
         <div className="text-center">
           {isRegistration ? (
