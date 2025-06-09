@@ -22,7 +22,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id, value, onChange, labe
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
         {label}
       </label>
       <div className="mt-1 relative rounded-md shadow-sm">
@@ -31,7 +31,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id, value, onChange, labe
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
           placeholder={placeholder}
           required
         />
@@ -137,27 +137,27 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
         <div className="text-center">
           {isRegistration ? (
-            <UserPlus className="mx-auto h-12 w-12 text-gray-700" />
+            <UserPlus className="mx-auto h-12 w-12 text-gray-700 dark:text-gray-200" />
           ) : (
-            <User className="mx-auto h-12 w-12 text-gray-700" />
+            <User className="mx-auto h-12 w-12 text-gray-700 dark:text-gray-200" />
           )}
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
             {isRegistration ? 'Регистрация' : 'Вход'}
           </h2>
         </div>
 
         {/* iOS-style Toggle */}
         <div className="flex justify-center">
-          <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+          <div className="bg-gray-100 dark:bg-gray-700 p-1 rounded-lg inline-flex">
             <button
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 !isRegistration
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-500 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100'
+                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
               onClick={() => setIsRegistration(false)}
             >
@@ -166,8 +166,8 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
             <button
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isRegistration
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-500 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100'
+                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
               onClick={() => setIsRegistration(true)}
             >
@@ -178,10 +178,10 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
         
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">или войдите через</span>
+            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">или войдите через</span>
           </div>
         </div>
 
@@ -197,7 +197,7 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
           <button
             onClick={handleVKLogin}
             disabled
-            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-200 text-gray-400 cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
           >
             <LogIn className="h-5 w-5" />
             ВКонтакте
@@ -206,28 +206,28 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">или заполните форму</span>
+            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">или заполните форму</span>
           </div>
         </div>
         
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded relative" role="alert">
               <span className="block sm:inline">{error}</span>
             </div>
           )}
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-200 px-4 py-3 rounded relative" role="alert">
               <span className="block sm:inline">{success}</span>
             </div>
           )}
           <div className="space-y-4">
             {isRegistration && (
               <div>
-                <label htmlFor="login" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="login" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Логин
                 </label>
                 <input
@@ -235,7 +235,7 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
                   name="login"
                   type="text"
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-transparent"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-transparent"
                   placeholder="example-login"
                   value={formData.login}
                   onChange={handleChange}
@@ -243,7 +243,7 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email
               </label>
               <input
@@ -251,7 +251,7 @@ export function AuthForm({ onLoginSuccess }: AuthFormProps) {
                 name="email"
                 type="email"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-transparent"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-transparent"
                 placeholder="example@mail.ru"
                 value={formData.email}
                 onChange={handleChange}
