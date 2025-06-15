@@ -1181,7 +1181,7 @@ export function Dashboard() {
                       <select
                         value={newRoleParent}
                         onChange={e => setNewRoleParent(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                       >
                         <option value="">Без родителя</option>
                         {roles.map(role => (
@@ -1216,7 +1216,7 @@ export function Dashboard() {
                         setSelectedRole(e.target.value);
                         fetchAccessObjects(e.target.value);
                       }}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     >
                       <option value="">Выберите роль</option>
                       {roles.map((role) => (
@@ -1314,7 +1314,7 @@ export function Dashboard() {
                       <select
                         value={assignRoleName}
                         onChange={e => setAssignRoleName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                       >
                         <option value="">Выберите роль</option>
                         {roles.map(role => (
