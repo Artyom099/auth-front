@@ -9,3 +9,8 @@ body {
 select {
   @apply bg-white text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600;
 }
+
+/* Style dropdown options for dark mode */
+select option {
+  @apply bg-white text-gray-900 dark:bg-gray-700 dark:text-white;
+}
