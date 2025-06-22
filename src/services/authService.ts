@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 export const API_URL = 'http://localhost:3010/api/v1';
 
@@ -69,10 +70,7 @@ export const authService = {
       // Очищаем куки
       document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при авторизации');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при авторизации');
     }
   },
 
@@ -86,15 +84,12 @@ export const authService = {
 
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-        }
-        throw new Error(error.response?.data?.message || 'Ошибка при получении данных пользователя');
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
       }
-      throw error;
+      handleApiError(error, 'Ошибка при получении данных пользователя');
     }
   },
 
@@ -107,10 +102,7 @@ export const authService = {
       });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при регистрации');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при регистрации');
     }
   },
 
@@ -121,10 +113,7 @@ export const authService = {
       });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при подтверждении регистрации');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при подтверждении регистрации');
     }
   },
 
@@ -158,7 +147,7 @@ export const authService = {
       // В любом случае очищаем токены
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      throw error;
+      handleApiError(error, 'Ошибка при выходе');
     }
   },
 
@@ -167,10 +156,7 @@ export const authService = {
       const response = await api.post('/auth/password-recovery', { email });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при запросе восстановления пароля');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при запросе восстановления пароля');
     }
   },
 
@@ -179,10 +165,7 @@ export const authService = {
       const response = await api.post('/auth/confirm-password-recovery', { code });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при подтверждении кода восстановления');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при подтверждении кода восстановления');
     }
   },
 
@@ -194,10 +177,7 @@ export const authService = {
       });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при обновлении пароля');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при обновлении пароля');
     }
   },
 
@@ -207,10 +187,7 @@ export const authService = {
       await this.updatePassword(newPassword, code);
       return { success: true };
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при обновлении пароля');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при обновлении пароля');
     }
   },
 
@@ -222,10 +199,7 @@ export const authService = {
       }
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении ролей пользователя');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при получении ролей пользователя');
     }
   },
 
@@ -237,10 +211,7 @@ export const authService = {
       }
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при создании роли');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при создании роли');
     }
   },
 
@@ -252,10 +223,7 @@ export const authService = {
       }
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении списка пользователей');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при получении списка пользователей');
     }
   },
 
@@ -267,10 +235,7 @@ export const authService = {
       }
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при выдаче роли пользователю');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при выдаче роли пользователю');
     }
   },
-}; 
+};

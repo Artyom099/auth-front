@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 const API_URL = 'http://localhost:3010/api/v1';
 
@@ -25,10 +26,7 @@ export const deviceService = {
       const response = await api.get('/device');
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении списка устройств');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при получении списка устройств');
     }
   },
 
@@ -37,10 +35,7 @@ export const deviceService = {
       const response = await api.delete('/device/delete', { data: { id: deviceId } });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при удалении устройства');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при удалении устройства');
     }
   },
 
@@ -74,10 +69,7 @@ export const deviceService = {
 
       return devicesResponse.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при удалении устройств');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при удалении устройств');
     }
   }
-}; 
+};

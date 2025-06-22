@@ -123,7 +123,7 @@ export function Dashboard() {
     } catch (error: any) {
       let forbiddenMsg = null;
       if (error?.response?.status === 403) {
-        forbiddenMsg = error.response.data?.message || 'Доступ запрещен';
+        forbiddenMsg = error.response.data?.message || 'Доступ ограничен';
       }
       if (forbiddenMsg) {
         showDeviceToast(forbiddenMsg);
@@ -142,7 +142,7 @@ export function Dashboard() {
       setRoles(response.payload || []);
     } catch (error: any) {
       if (error?.response?.status === 403) {
-        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        showDeviceToast(error.response.data?.message || 'Доступ ограничен');
         return;
       }
       setRolesError('Ошибка при загрузке ролей');
@@ -175,7 +175,7 @@ export function Dashboard() {
       }
     } catch (error: any) {
       if (error?.response?.status === 403) {
-        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        showDeviceToast(error.response.data?.message || 'Доступ ограничен');
         return;
       }
       setAccessObjectsError('Ошибка при загрузке объектов доступа');
@@ -193,7 +193,7 @@ export function Dashboard() {
       setRoleTree(response.payload || []);
     } catch (error: any) {
       if (error?.response?.status === 403) {
-        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        showDeviceToast(error.response.data?.message || 'Доступ ограничен');
         return;
       }
       setRoleTreeError('Ошибка при загрузке дерева ролей');
@@ -394,7 +394,7 @@ export function Dashboard() {
       await fetchAccessObjects(selectedRole);
     } catch (error: any) {
       if (error?.response?.status === 403) {
-        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        showDeviceToast(error.response.data?.message || 'Доступ ограничен');
         return;
       }
       console.error('Ошибка при выдаче доступа:', error);
@@ -444,7 +444,7 @@ export function Dashboard() {
       await fetchAccessObjects(selectedRole);
     } catch (error: any) {
       if (error?.response?.status === 403) {
-        showDeviceToast(error.response.data?.message || 'Доступ запрещен');
+        showDeviceToast(error.response.data?.message || 'Доступ ограничен');
         return;
       }
       console.error('Ошибка при отзыве доступа:', error);

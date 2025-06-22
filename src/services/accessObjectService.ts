@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "./config";
+import { handleApiError } from './apiErrorHandler';
 
 export enum EAccessObjectType {
   APP = 'APP',
@@ -53,7 +54,7 @@ export const accessObjectService = {
       const response = await api.post('/admin/access_object/calculate_rights', { roleName });
       return response.data;
     } catch (error) {
-      throw this.handleError(error);
+      handleApiError(error, 'Ошибка при загрузке объектов доступа');
     }
   },
 
@@ -65,7 +66,7 @@ export const accessObjectService = {
       });
       return response.data;
     } catch (error) {
-      throw this.handleError(error);
+      handleApiError(error, 'Ошибка при обновлении прав доступа');
     }
   }
-}; 
+};

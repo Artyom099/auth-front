@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 const API_URL = 'http://localhost:3010/api/v1';
 
@@ -40,10 +41,7 @@ export const roleService = {
 
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении списка ролей');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при получении списка ролей');
     }
   },
 
@@ -61,10 +59,7 @@ export const roleService = {
 
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при создании роли');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при создании роли');
     }
   },
 
@@ -82,10 +77,7 @@ export const roleService = {
 
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при обновлении роли');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при обновлении роли');
     }
   },
 
@@ -99,10 +91,7 @@ export const roleService = {
 
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при удалении роли');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при удалении роли');
     }
   },
 
@@ -113,10 +102,7 @@ export const roleService = {
       });
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || 'Ошибка при получении дерева ролей');
-      }
-      throw error;
+      handleApiError(error, 'Ошибка при получении дерева ролей');
     }
   }
-}; 
+};
