@@ -48,6 +48,15 @@ const api = axios.create({
   }
 });
 
+// Добавляем интерцептор для автоматической вставки access token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const accessObjectService = {
   async getAccessObjectTree(roleName: string) {
     try {
