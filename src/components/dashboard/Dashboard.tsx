@@ -77,13 +77,30 @@ export function Dashboard() {
   const [userRolesLoadingId, setUserRolesLoadingId] = useState<string | null>(null);
   const [userRolesErrorId, setUserRolesErrorId] = useState<string | null>(null);
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = async (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'access-objects' && roles.length > 0) {
-      const firstRole = roles[0].name;
-      setSelectedRole(firstRole);
-      fetchAccessObjects(firstRole);
+
+    if (tab === 'devices' && devices.length === 0) {
+      fetchDevices();
     }
+
+    if (tab === 'roles' && roles.length === 0) {
+      fetchRoles();
+    }
+
+    if (tab === 'access-objects') {
+      let currentRoles = roles;
+      if (currentRoles.length === 0) {
+        const fetched = await fetchRoles();
+        if (fetched) currentRoles = fetched;
+      }
+      if (currentRoles.length > 0) {
+        const firstRole = currentRoles[0].name;
+        setSelectedRole(firstRole);
+        fetchAccessObjects(firstRole);
+      }
+    }
+
     if (tab === 'users') {
       fetchUsers();
     }
@@ -93,7 +110,6 @@ export function Dashboard() {
     setUserData(userData);
     setIsLoggedIn(true);
     setActiveTab('profile');
-    fetchDevices();
     fetchUserRoles(userData.id);
   };
 
@@ -135,17 +151,20 @@ export function Dashboard() {
     }
   };
 
-  const fetchRoles = async () => {
+  const fetchRoles = async (): Promise<Role[] | undefined> => {
     try {
       setIsRolesLoading(true);
       const response = await roleService.getRoles();
-      setRoles(response.payload || []);
+      const fetched = response.payload || [];
+      setRoles(fetched);
+      return fetched;
     } catch (error: any) {
       if (error?.response?.status === 403) {
         showDeviceToast(error.response.data?.message || 'Доступ ограничен');
-        return;
+        return undefined;
       }
       setRolesError('Ошибка при загрузке ролей');
+      return undefined;
     } finally {
       setIsRolesLoading(false);
     }
@@ -273,11 +292,7 @@ export function Dashboard() {
           });
           setIsLoggedIn(true);
           setActiveTab('profile');
-          await Promise.all([
-            fetchDevices(),
-            fetchRoles(),
-            fetchUserRoles(response.payload.id)
-          ]);
+          await fetchUserRoles(response.payload.id);
         } else {
           throw new Error('Данные пользователя не получены');
         }
@@ -293,11 +308,7 @@ export function Dashboard() {
       setUserData(location.state.userData);
       setIsLoggedIn(true);
       setActiveTab('profile');
-      Promise.all([
-        fetchDevices(),
-        fetchRoles(),
-        fetchUserRoles(location.state.userData.id)
-      ]);
+      fetchUserRoles(location.state.userData.id);
     } else {
       checkAuth();
     }
